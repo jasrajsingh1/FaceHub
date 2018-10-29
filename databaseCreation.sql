@@ -1,0 +1,5 @@
+create table Accounts (email varchar(50) primary key, name varchar(50), password varchar(50), phonenumber varchar(15), image longblob, resume longblob, interests varchar(5000));
+create table Followers (follower_email varchar(50), followee_email varchar(50), foreign key (follower_email) references Accounts(email), foreign key (followee_email) references Accounts(email));
+create table ResearchIdea (dateOfCreation datetime, advisor_email varchar(50), foreign key (advisor_email) references Accounts(email), research_name varchar(750) primary key, description text, interests text);
+create table Reacts(research_name varchar(750) primary key, name_of_like varchar(50), name_of_dislike varchar(50), name_of_love varchar(50), name_of_surprise varchar(50), name_of_laugh varchar(50));
+create table Comments(research_name varchar(750) primary key, person_comment varchar(100), comment text);
