@@ -1,0 +1,41 @@
+extends layout
+
+block additional-styling
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
+    link(rel='stylesheet' href='/stylesheets/add-entry.css')
+
+block content
+    div.card.container: div.card-body
+        h3 Submit an Idea
+        hr
+        form(method='post' action='' enctype='multipart/form-data')
+            div.form-row
+                div.form-group
+                    label(for='title') Title:
+                    input.form-control(type='text' id='title' name='title')
+            div.form-row
+                div.col-sm-4#image-container
+                    div.dropZoneContainer
+                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
+                        div.dropZoneOverlay.empty
+                            p Drag and drop your image
+                            p <b>or click here.</b>
+
+                div.col-sm-8#text-container
+                    div.form-group
+                        label(for='description') Description
+                        textarea.form-control(id='description' rows='3' name='description')
+                    div.form-group
+                        label(for='tags') Tags:
+                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
+
+            div.action-group
+                button.btn.btn-primary(type='submit') Add
+                button.btn.btn-primary(type='reset') Clear
+
+
+
+block additional-libraries
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
+    script(src='/javascripts/add-entry.js')
