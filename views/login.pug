@@ -1,0 +1,28 @@
+extends layout
+
+block additional-styling
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
+    link(rel='stylesheet' href='/stylesheets/add-entry.css')
+
+block content
+    div.card.container: div.card-body
+        h3 Login
+        hr
+        form(method='post' action='')
+            div.form-row
+                div.form-group
+                    label(for='userEmail') Email:
+                    input.form-control(type='email' id='userEmail' name='userEmail' required="yes")
+                div.form-group
+                    label(for='userPassword') Password
+                    input.form-control(type='password' id='userPassword' rows='3' name='userPassword' required="yes")
+                
+            div.action-group
+                button.btn.btn-primary(type='submit') Login
+                button.btn.btn-primary(type='reset') Clear
+
+
+
+block additional-libraries
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')

@@ -13,5 +13,18 @@
     "morgan": "~1.9.0",
     "multer": "^1.4.1",
     "pug": "2.0.0-beta11"
-  }
+  },
+  "description": "FaceHub",
+  "main": "app.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasrajsingh1/FaceHub.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jasrajsingh1/FaceHub/issues"
+  },
+  "homepage": "https://github.com/jasrajsingh1/FaceHub#readme"
 }

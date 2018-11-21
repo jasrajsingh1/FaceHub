@@ -1,0 +1,18 @@
+extends layout
+
+block additional-styling
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
+    link(rel='stylesheet' href='/stylesheets/add-entry.css')
+
+block content
+    div.card.container: div.card-body
+        h3 Login
+        hr
+        h1 Success!
+
+
+
+block additional-libraries
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
+    script(src='/javascripts/add-entry.js')

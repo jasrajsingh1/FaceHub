@@ -4,11 +4,30 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var http = require('http');
+var mysql = require('mysql');
+var port = 5000;
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
+
+const db = mysql.createConnection ({
+  host: 'localhost',
+  user: 'root',
+  password: 'gitbook',
+  database: 'Gitbook'
+});
+
+// connect to database
+db.connect((err) => {
+  if (err) {
+      throw err;
+  }
+  console.log('Connected to database');
+});
+global.db = db;
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -39,10 +58,12 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+app.use(express.json());
+
 module.exports = app;
 
 
 
-app.listen(8080, function() {
-  console.log('Example app listening on port 8080!');
+app.listen(port, function() {
+  console.log('Example app listening on port '+port+'!');
 });
