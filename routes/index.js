@@ -28,18 +28,12 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
     let description = req.body.description;
     let tags = req.body.tags;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    
-    let tagStr = "";
-
-    for (let t of tags) {
-        tagStr += t;
-    }
 
     console.log("title is: "+title);
 
     //TODO Add to DB here
     let query = "INSERT INTO ResearchIdea (dateOfCreation, advisor_email, research_name, description, interests) VALUES ('" +
-                            date + "', '" + userEmail + "', '" + title + "', '" + description + "', '" + tagStr + "')";
+                            date + "', '" + userEmail + "', '" + title + "', '" + description + "', '" + JSON.stringify(tags) + "')";
 
     db.query(query, (err, result) => {
         if (err) {
@@ -90,7 +84,7 @@ router.post('/login', function (req, res, next) {
                 } 
             }  
         });
-    });
+});
 
     router.get('/create-login', function (req, res, next) {
         res.render('create-account', { title: 'Register' });
@@ -169,61 +163,118 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 
 
 
-    router.get('/test', function (req, res, next) {
+router.get('/test', function (req, res, next) {
 
-        let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email";
-        db.query(query, (err, result, fields) => {
+    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email";
+    db.query(query, (err, result, fields) => {
 
-            if (err) {
-                console.log("ERROR");
+        if (err) {
+            console.log("ERROR");
+        }
+
+        else {
+            //console.log(result);
+            for(let r of result) {
+
+                let date = r.dateOfCreation;
+                let advisor_email = r.advisor_email;
+                let research_name = r.research_name;
+                let description = r.description;
+                let interests = r.interests;
+                let advisorName = r.name;
+                let password = r.password;
+                let phoneNumber = r.phonenumber;
+                let user_interests = r.user_interests;
+                let image = r.image; //U have to figure out how to get picture
+
+                //console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
             }
-
-            else {
-                let count = 0;
-
-                //console.log(result);
-                for(let r of result) {
-                    console.log("STARTING TEST");
-                    let date = r.dateOfCreation;
-                    let advisor_email = r.advisor_email;
-                    let research_name = r.research_name;
-                    let description = r.description;
-                    let interests = r.interests;
-                    let advisorName = r.name;
-                    let password = r.password;
-                    let phoneNumber = r.phonenumber;
-                    let user_interests = r.user_interests;
-                    let image = r.image; 
-                    let imgExt = r.imageExtension;
-                    let outputfile = "outputImg" + count + "."+ imgExt;
-                    console.log("WRITING IMAGE");
-                    const buf = new Buffer(image, "binary");
-                    fs.writeFileSync(outputfile, buf);
-
-                    count = count + 1;
-
-                    //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
-
-                    console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
-                }
-            }  
-        });
+        }  
     });
+});
 
+/* GET feed page*/
+router.get('/feed', function(req, res, next) {    
+    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
+    db.query(userQuery, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            for (let r of result) {
+                let userInterests = JSON.parse(r.user_interests);
+                res.render('feed', { interests: userInterests });
+            }
+        }
+    });
+});
 
+/* POST feed page */
+router.post('/feed', function(req, res, next) {
+    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
+    db.query(userQuery, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+        } else {
+            for (let r of result) {
+                let userInterests = JSON.parse(r.user_interests);
+                res.render('feed', { interests: userInterests });
+            }
+        }
+    });
+});
 
+router.get('/test', function (req, res, next) {
+
+    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email";
+    db.query(query, (err, result, fields) => {
+
+        if (err) {
+            console.log("ERROR");
+        }
+
+        else {
+            let count = 0;
+
+            //console.log(result);
+            for(let r of result) {
+                console.log("STARTING TEST");
+                let date = r.dateOfCreation;
+                let advisor_email = r.advisor_email;
+                let research_name = r.research_name;
+                let description = r.description;
+                let interests = r.interests;
+                let advisorName = r.name;
+                let password = r.password;
+                let phoneNumber = r.phonenumber;
+                let user_interests = r.user_interests;
+                let image = r.image; 
+                let imgExt = r.imageExtension;
+                let outputfile = "outputImg" + count + "."+ imgExt;
+                console.log("WRITING IMAGE");
+                const buf = new Buffer(image, "binary");
+                fs.writeFileSync(outputfile, buf);
+
+                count = count + 1;
+
+                //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
+
+                console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
+            }
+        }  
+    });
+});
 
 module.exports = router;
 
 function readImageFile(file) {
-    // read binary data from a file:
-    const bitmap = fs.readFileSync(file);
-    const buf = new Buffer(bitmap);
-    return buf;
+// read binary data from a file:
+const bitmap = fs.readFileSync(file);
+const buf = new Buffer(bitmap);
+return buf;
 }
 
 function getFilesizeInBytes(filename) {
-    const stats = fs.statSync(filename)
-    const fileSizeInBytes = stats.size
-    return fileSizeInBytes
+const stats = fs.statSync(filename)
+const fileSizeInBytes = stats.size
+return fileSizeInBytes
 }
