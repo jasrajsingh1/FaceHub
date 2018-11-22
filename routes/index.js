@@ -7,6 +7,7 @@ var express = require('express');
 var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
+const fs = require("fs");
 var userEmail = "";
 
 /* GET home page. */
@@ -91,8 +92,82 @@ router.post('/login', function (req, res, next) {
         });
     });
 
-    // router.get('/createLogin');
-    // router.post('/createLogin');
+    router.get('/create-login', function (req, res, next) {
+        res.render('create-account', { title: 'Register' });
+    });
+    
+
+    /* POST add idea page. */
+router.post('/create-login', upload.single('pic'), function (req, res, next) {
+
+    let image = req.file;
+    let email = req.body.email;
+    let name = req.body.name;
+    let password = req.body.password;
+    let number = req.body.number;
+    let tags = req.body.tags;
+    
+    let imageData = readImageFile("uploads/"+image.filename);
+    let imageExt = image.originalname.split(".")[1];
+    console.log(imageExt);
+
+    let tagStr = "";
+
+    for (let t of tags) {
+        tagStr += t;
+    }
+
+
+    fs.open("uploads/"+image.filename, 'r', function (status, fd) {
+        if (status) {
+            console.log(status.message);
+            return;
+        }
+        var fileSize = getFilesizeInBytes("uploads/"+image.filename);
+        var buffer = new Buffer(fileSize);
+        fs.read(fd, buffer, 0, fileSize, 0, function (err, num) {
+    
+            var query = "INSERT INTO Accounts SET ?",
+                values = {
+                    email: email,
+                    name: name,
+                    password: password,
+                    phonenumber: number,
+                    image: buffer,
+                    imageExtension: imageExt,
+                    user_interests: tagStr
+                };
+            db.query(query, values, function (er, da) {
+                if(er)throw er;
+            });
+    
+        });
+    });
+
+
+
+    // let query = "INSERT INTO Accounts (email, name, password, phonenumber, image, imageExtension, user_interests) VALUES ('" +
+    //                         email + "', '" + name + "', '" + password + "', '" + number + "', BINARY(:'" + imageData + ")', '" + imageExt + "', '" + tagStr + "')";
+    // console.log("Query is: "+query);
+    // db.query(query, (err, result) => {
+    //     if (err) {
+    //         console.log("Query is: "+query);
+    //         console.log(err);
+    //         //return res.status(500).send(err);
+    //     }
+    //     res.redirect('/');
+    // });
+    
+});
+
+/*
+NOTES: TRY TO SEE HOW TO INSERT PROPERLY INTO ACCOUNTS DB
+INSERT IMAGE INTO DB
+FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
+*/
+
+
+
 
     router.get('/test', function (req, res, next) {
 
@@ -104,9 +179,11 @@ router.post('/login', function (req, res, next) {
             }
 
             else {
+                let count = 0;
+
                 //console.log(result);
                 for(let r of result) {
-
+                    console.log("STARTING TEST");
                     let date = r.dateOfCreation;
                     let advisor_email = r.advisor_email;
                     let research_name = r.research_name;
@@ -116,9 +193,18 @@ router.post('/login', function (req, res, next) {
                     let password = r.password;
                     let phoneNumber = r.phonenumber;
                     let user_interests = r.user_interests;
-                    let image = r.image; //U have to figure out how to get picture
+                    let image = r.image; 
+                    let imgExt = r.imageExtension;
+                    let outputfile = "outputImg" + count + "."+ imgExt;
+                    console.log("WRITING IMAGE");
+                    const buf = new Buffer(image, "binary");
+                    fs.writeFileSync(outputfile, buf);
 
-                    //console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
+                    count = count + 1;
+
+                    //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
+
+                    console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
                 }
             }  
         });
@@ -128,3 +214,16 @@ router.post('/login', function (req, res, next) {
 
 
 module.exports = router;
+
+function readImageFile(file) {
+    // read binary data from a file:
+    const bitmap = fs.readFileSync(file);
+    const buf = new Buffer(bitmap);
+    return buf;
+}
+
+function getFilesizeInBytes(filename) {
+    const stats = fs.statSync(filename)
+    const fileSizeInBytes = stats.size
+    return fileSizeInBytes
+}
