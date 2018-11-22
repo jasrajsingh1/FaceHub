@@ -161,38 +161,6 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 
 
-
-
-router.get('/test', function (req, res, next) {
-
-    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email";
-    db.query(query, (err, result, fields) => {
-
-        if (err) {
-            console.log("ERROR");
-        }
-
-        else {
-            //console.log(result);
-            for(let r of result) {
-
-                let date = r.dateOfCreation;
-                let advisor_email = r.advisor_email;
-                let research_name = r.research_name;
-                let description = r.description;
-                let interests = r.interests;
-                let advisorName = r.name;
-                let password = r.password;
-                let phoneNumber = r.phonenumber;
-                let user_interests = r.user_interests;
-                let image = r.image; //U have to figure out how to get picture
-
-                //console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
-            }
-        }  
-    });
-});
-
 /* GET feed page*/
 router.get('/feed', function(req, res, next) {    
     let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
@@ -267,14 +235,14 @@ router.get('/test', function (req, res, next) {
 module.exports = router;
 
 function readImageFile(file) {
-// read binary data from a file:
-const bitmap = fs.readFileSync(file);
-const buf = new Buffer(bitmap);
-return buf;
+    // read binary data from a file:
+    const bitmap = fs.readFileSync(file);
+    const buf = new Buffer(bitmap);
+    return buf;
 }
 
 function getFilesizeInBytes(filename) {
-const stats = fs.statSync(filename)
-const fileSizeInBytes = stats.size
-return fileSizeInBytes
+    const stats = fs.statSync(filename)
+    const fileSizeInBytes = stats.size
+    return fileSizeInBytes
 }
