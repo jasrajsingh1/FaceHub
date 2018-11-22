@@ -3,20 +3,59 @@ extends layout
 block additional-styling
         link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
         link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
+        link(rel='stylesheet' href='/stylesheets/home-bootstrap.min.css')
         link(rel='stylesheet' href='/stylesheets/home.css')
+
 block content
-        header 
-                h1 GitBook
-        .container
-                .main-content
-                        p
-                                | Welcome to Gitbook!
-                                | If you like our site, please donate to our sneck fund
-                .sidebar
-                        .widget 
-                                h1 image
-                                p       
-                                        |idk put a picture here or smth
-        footer
-                p 
-                | By Ethan Farkas, Jasraj Singh, Kenneth Jiang, Luke Yoon
+    header.bg-primary.text-white
+      .container.text-center
+        h1 Welcome to Gitbook
+        p.lead A collaboration website for technical projects
+        form(action='/login')
+                input(type='submit', value='Get Started')
+    section#about
+      .container
+        .row
+          .col-lg-8.mx-auto
+            h2 About Gitbook
+            p.lead
+              | Gitbook connects people who have a technical need to students.  Topics include:
+            ul
+              li Startup founders looking for new hires
+              li Professors wishing to fuffill miscellaneous tasks
+              li Students looking for research opportunities
+               
+    section#services.bg-light
+      .container
+        .row
+          .col-lg-8.mx-auto
+            h2 Features
+            p.lead
+                | Upload your resume, follow people of interest, and make posts advertising your projects
+            p
+                | To get started with Gitbook, make your profile above. 
+                |If you are looking to contribute to a project, you can browse current projects, filtering by topics that interest you.
+                |  If you are a project leader, simply describe your project, and select what topics it falls under.
+                | Gitbook will showcase your project to others, and anyone interested in your project will contact you.
+    section#contact
+      .container
+        .row
+          .col-lg-8.mx-auto
+            h2 About this site
+            p.lead
+              | Made using Node.js and Express
+    // Footer
+    footer.py-5.bg-dark
+      .container
+        p.m-0.text-center.text-white Ethan Farkas, Jasraj Singh, Kenneth Jiang, Luke Yoon
+
+block additional-libraries
+      
+      // Bootstrap core JavaScript
+      script(src='/javascripts/home-jquery.min.js')
+      script(src='vendor/bootstrap/js/bootstrap.bundle.min.js')
+      // Plugin JavaScript
+      script(src='/javascripts/home-jquery.easing.min.js')
+      
+      script(src='/javascripts/home-scrolling-nav.js')
+
