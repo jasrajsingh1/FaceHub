@@ -1,0 +1,18 @@
+extends layout
+
+block content
+  form(method='post' action='')
+    ul.nav.nav-tabs
+      li.navitem
+        input.nav-link(type='submit' value='All' name='interest')
+      each interest in interests
+        li.navitem
+        input.nav-link(type='submit' value=interest name='interest')
+  each project in projects
+    div.card
+      div.card-body
+        p.card-header=project.date
+        h5.card-title=project.name
+        p.card-text=project.description
+        p.card-footer=project.tags
+

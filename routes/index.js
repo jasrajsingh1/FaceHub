@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = "";
+var userEmail = "test@gmail.com"; // Changed for testing
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -105,11 +105,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
     let imageExt = image.originalname.split(".")[1];
     console.log(imageExt);
 
-    let tagStr = "";
-
-    for (let t of tags) {
-        tagStr += t;
-    }
+    let tagStr = JSON.stringify(tags);
 
 
     fs.open("uploads/"+image.filename, 'r', function (status, fd) {
@@ -160,40 +156,84 @@ INSERT IMAGE INTO DB
 FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 
+function query(sql) {
+    return new Promise((resolve, reject) => {
+        db.query(sql, (err, result, fields) => {
+            if (err) {
+                return reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
 
-/* GET feed page*/
-router.get('/feed', function(req, res, next) {    
+async function getInterests() {
     let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
-    db.query(userQuery, (err, result, fields) => {
-        if (err) {
-            console.log(err);
-        } else {
-            for (let r of result) {
-                let userInterests = JSON.parse(r.user_interests);
-                res.render('feed', { interests: userInterests });
+
+    try {
+        let results = await query(userQuery);
+        return JSON.parse(results[0].user_interests);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function getProjects(userInterests) {
+    let projects = [];
+    let researchQuery = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC";
+    console.log(userInterests);
+    try {
+        let results = await query(researchQuery);
+
+        for(let r of results) {
+            let date = r.dateOfCreation;
+            let advisorEmail = r.advisor_email;
+            let researchName = r.research_name;
+            let description = r.description;
+            let interests = JSON.parse(r.interests);
+            let advisorName = r.name;
+            /*let image = r.image; 
+            let imgExt = r.imageExtension;
+            let outputfile = "outputImg" + count + "."+ imgExt;
+            const buf = new Buffer(image, "binary");
+            fs.writeFileSync(outputfile, buf);*/
+            if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
+                let obj = { date: date,
+                            advisor: advisorName,
+                            name: researchName,
+                            description: description,
+                            tags: interests };
+                projects.push(obj);
             }
         }
-    });
+
+        return projects;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/* GET feed page*/
+router.get('/feed', async function(req, res, next) {
+    let interests = await getInterests();
+    let projects = await getProjects(interests);
+    console.log(projects);
+    res.render('feed', { interests: interests, projects: projects });
 });
 
 /* POST feed page */
-router.post('/feed', function(req, res, next) {
-    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
-    db.query(userQuery, (err, result, fields) => {
-        if (err) {
-            console.log(err);
-        } else {
-            for (let r of result) {
-                let userInterests = JSON.parse(r.user_interests);
-                res.render('feed', { interests: userInterests });
-            }
-        }
-    });
+router.post('/feed', async function(req, res, next) {
+    let interests = await getInterests();
+    let selected = req.body.interest === "All" ? interests: [req.body.interest];
+    let projects = await getProjects(selected);
+    console.log(projects);
+    res.render('feed', { interests: interests, projects: projects });
 });
 
 router.get('/test', function (req, res, next) {
 
-    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email";
+    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation";
     db.query(query, (err, result, fields) => {
 
         if (err) {
@@ -212,9 +252,7 @@ router.get('/test', function (req, res, next) {
                 let description = r.description;
                 let interests = r.interests;
                 let advisorName = r.name;
-                let password = r.password;
                 let phoneNumber = r.phonenumber;
-                let user_interests = r.user_interests;
                 let image = r.image; 
                 let imgExt = r.imageExtension;
                 let outputfile = "outputImg" + count + "."+ imgExt;
