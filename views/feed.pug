@@ -13,6 +13,8 @@ block content
       div.card-body
         p.card-header=project.date
         h5.card-title=project.name
+        a(href="/")
+          img(src=project.filename height=100 width=100)
         p.card-text=project.description
         p.card-footer=project.tags
 

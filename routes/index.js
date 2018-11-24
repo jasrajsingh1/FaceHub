@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = ""; 
+var userEmail = "test2@gmail.com"; // Changed for testing
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -22,7 +22,6 @@ router.get('/add-entry', function(req, res, next) {
 
 /* POST add idea page. */
 router.post('/add-entry', upload.single('pic'), function (req, res, next) {
-
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
@@ -100,14 +99,28 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
     let password = req.body.password;
     let number = req.body.number;
     let tags = req.body.tags;
-    
-    let imageData = readImageFile("uploads/"+image.filename);
-    let imageExt = image.originalname.split(".")[1];
-    console.log(imageExt);
-
     let tagStr = JSON.stringify(tags);
+    let imageExt = image.originalname.split(".")[1];
+    fs.readFile("uploads/"+image.filename, function(err, data) {
+        if (err) { console.log(err); }
 
+        let imageData = data;
 
+        var query = "INSERT INTO Accounts SET ?";
+        let values = {
+            email: email,
+            name: name,
+            password: password,
+            phonenumber: number,
+            image: imageData,
+            imageExtension: imageExt,
+            user_interests: tagStr
+        };
+        db.query(query, values, function (er, da) {
+            if(er)throw er;
+        });
+    });
+    /*
     fs.open("uploads/"+image.filename, 'r', function (status, fd) {
         if (status) {
             console.log(status.message);
@@ -132,7 +145,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             });
     
         });
-    });
+    });*/
 
 
 
@@ -169,10 +182,10 @@ function query(sql) {
 }
 
 async function getInterests() {
-    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
+    let userQuery = `SELECT user_interests, image, imageExtension FROM Accounts WHERE email='${userEmail}'`;
 
     try {
-        let results = await query(userQuery);
+        let results = await query(userQuery);        
         return JSON.parse(results[0].user_interests);
     } catch (err) {
         console.log(err);
@@ -181,7 +194,7 @@ async function getInterests() {
 
 async function getProjects(userInterests) {
     let projects = [];
-    let researchQuery = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC";
+    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
     console.log(userInterests);
     try {
         let results = await query(researchQuery);
@@ -193,17 +206,17 @@ async function getProjects(userInterests) {
             let description = r.description;
             let interests = JSON.parse(r.interests);
             let advisorName = r.name;
-            /*let image = r.image; 
+            let image = r.image; 
             let imgExt = r.imageExtension;
-            let outputfile = "outputImg" + count + "."+ imgExt;
-            const buf = new Buffer(image, "binary");
-            fs.writeFileSync(outputfile, buf);*/
+            let outputFile = `public/images/${advisorName}.${imgExt}`;
+            fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
                 let obj = { date: date,
                             advisor: advisorName,
                             name: researchName,
                             description: description,
-                            tags: interests };
+                            tags: interests,
+                            filename: outputFile };
                 projects.push(obj);
             }
         }
