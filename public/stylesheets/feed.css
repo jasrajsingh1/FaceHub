@@ -1,0 +1,66 @@
+body {
+  background-image: linear-gradient(rgb(12, 92, 197), rgb(132, 185, 255));
+}
+
+.projects {
+}
+
+.project {
+  background-color: rgb(255, 255, 255);
+  width: 900px;
+  margin: 10px;
+}
+
+.left {
+  float: left;
+  width: 100px;
+  padding: 10px;
+}
+
+.right {
+  float: left;
+  width: 700px;
+  padding: 10px;
+  margin: 10px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.selected {
+  background: rgb(5, 155, 255);
+}
+
+.pic {
+  width: 100px;
+  height: 100px;
+}
+
+.name {
+  text-align: center;
+}
+
+.title {
+
+}
+
+.description {
+}
+
+.tags {
+  background-color: #5a5a5a;
+  border: none;
+  color: #ffffff;
+  text-align: center;
+  padding: 3px 6px;
+  margin: 4px 6px;
+  border-radius: 20px;
+}
+
+.date {
+  color: #d8d8d8;
+  text-align: right;
+}

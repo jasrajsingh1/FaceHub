@@ -1,20 +1,33 @@
 extends layout
 
+block additional-styling
+    link(rel='stylesheet' href='/stylesheets/feed.css')
+
 block content
+  input(type='hidden' id='selected' value=selected)
   form(method='post' action='')
     ul.nav.nav-tabs
       li.navitem
-        input.nav-link(type='submit' value='All' name='interest')
+        input.nav-link(type='submit' value='All' id='All' name='interest')
       each interest in interests
         li.navitem
-        input.nav-link(type='submit' value=interest name='interest')
-  each project in projects
-    div.card
-      div.card-body
-        p.card-header=project.date
-        h5.card-title=project.name
-        a(href="/")
-          img(src=project.filename height=100 width=100)
-        p.card-text=project.description
-        p.card-footer=project.tags
+          input.nav-link(type='submit' value=interest id=interest name='interest')
+  div.projects
+    each project in projects
+      div.card.project
+        div.card-body.row
+          div.left
+            a(href="/")
+              img.pic(src=project.filename)
+              div.name.card-text=project.name
+          div.right
+            h4=project.title
+            div.description.card-text=project.description
+        div
+          each tag in project.tags
+            span.tags=tag
+        small.date=project.date
+  
 
+block additional-libraries
+  script(src='/javascripts/set-active.js')

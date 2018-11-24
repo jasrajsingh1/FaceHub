@@ -182,7 +182,7 @@ function query(sql) {
 }
 
 async function getInterests() {
-    let userQuery = `SELECT user_interests, image, imageExtension FROM Accounts WHERE email='${userEmail}'`;
+    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
 
     try {
         let results = await query(userQuery);        
@@ -208,12 +208,12 @@ async function getProjects(userInterests) {
             let advisorName = r.name;
             let image = r.image; 
             let imgExt = r.imageExtension;
-            let outputFile = `public/images/${advisorName}.${imgExt}`;
+            let outputFile = `images/${advisorName}.${imgExt}`;
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
                 let obj = { date: date,
-                            advisor: advisorName,
-                            name: researchName,
+                            name: advisorName,
+                            title: researchName,
                             description: description,
                             tags: interests,
                             filename: outputFile };
@@ -240,8 +240,7 @@ router.post('/feed', async function(req, res, next) {
     let interests = await getInterests();
     let selected = req.body.interest === "All" ? interests: [req.body.interest];
     let projects = await getProjects(selected);
-    console.log(projects);
-    res.render('feed', { interests: interests, projects: projects });
+    res.render('feed', { selected: req.body.interest, interests: interests, projects: projects});
 });
 
 router.get('/test', function (req, res, next) {
