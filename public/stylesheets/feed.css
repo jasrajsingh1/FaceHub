@@ -4,19 +4,21 @@ body {
 
 .filter-area {
   background-color: rgb(0, 61, 192);
+  width: 900px;
+  margin: 10px;
 }
 
 .filter {
+  display: block;
+  width: 100%;
   background-color: Transparent;
   border: none;
-  margin: 5px 0px 5px 10px;
   cursor:pointer;
   color: white;
 }
 
 .tabs {
   list-style-type: none;
-  width: 900px;
 }
 
 .tab {
