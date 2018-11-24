@@ -5,13 +5,15 @@ block additional-styling
 
 block content
   input(type='hidden' id='selected' value=selected)
-  form(method='post' action='')
-    ul.nav.nav-tabs
-      li.navitem
-        input.nav-link(type='submit' value='All' id='All' name='interest')
-      each interest in interests
-        li.navitem
-          input.nav-link(type='submit' value=interest id=interest name='interest')
+  div.filter-area
+    button.filter(data-toggle="collapse" data-target="#tabs")='Filter by tags'
+    form.collapse#tabs(method='post' action='')
+      ul.tabs
+        li.tab
+          input.link(type='submit' value='All' id='All' name='interest')
+        each interest in interests
+          li.tab
+            input.link(type='submit' value=interest id=interest name='interest')
   div.projects
     each project in projects
       div.card.project

@@ -1,5 +1,32 @@
 body {
-  background-image: linear-gradient(rgb(12, 92, 197), rgb(132, 185, 255));
+  background-color: rgb(12, 92, 197);
+}
+
+.filter-area {
+  background-color: rgb(0, 61, 192);
+}
+
+.filter {
+  background-color: Transparent;
+  border: none;
+  margin: 5px 0px 5px 10px;
+  cursor:pointer;
+  color: white;
+}
+
+.tabs {
+  list-style-type: none;
+  width: 900px;
+}
+
+.tab {
+  display:inline;
+}
+
+.link {
+  background-color: rgb(139, 139, 139);
+  margin: 3px;
+  border-radius: 5px 12px 5px;
 }
 
 .projects {
@@ -55,9 +82,9 @@ body {
   border: none;
   color: #ffffff;
   text-align: center;
-  padding: 3px 6px;
+  padding: 4px 8px;
   margin: 4px 6px;
-  border-radius: 20px;
+  border-radius: 12px;
 }
 
 .date {

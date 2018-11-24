@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = "test2@gmail.com"; // Changed for testing
+var userEmail = ""; 
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
