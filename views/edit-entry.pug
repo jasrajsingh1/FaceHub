@@ -3,46 +3,41 @@ extends layout
 block additional-styling
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
-    link(rel='stylesheet' href='/stylesheets/create-account.css')
+    link(rel='stylesheet' href='/stylesheets/add-entry.css')
 
 block content
     div.card.container: div.card-body
-        h3 Edit Your Account
+        h3 Submit an Idea
         hr
         form(method='post' action='' enctype='multipart/form-data')
             div.form-row
                 div.form-group
-                    label(for='email') Email:
-                    input.form-control(type='email' id='email' name='email' required = "yes")
-                    label(for='name') Name:
-                    input.form-control(type='text' id='name' name='name' required = "yes")
-                    label(for='password') Password:
-                    input.form-control(type='password' id='password' name='password' required = "yes")
-                    label(for='number') Phone Number:
-                    input.form-control(type='text' id='number' name='number' required = "yes")
+                    label(for='title') Title:
+                    input.form-control(type='text' id='title' name='title' value=val_title)
             div.form-row
                 div.col-sm-4#image-container
                     div.dropZoneContainer
                         input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
                         div.dropZoneOverlay.empty
-                            p Drag and drop your profile picture
+                            p Drag and drop your image
                             p <b>or click here.</b>
 
                 div.col-sm-8#text-container
                     div.form-group
-                        label(for='tags') Interests:
-                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
+                        label(for='description') Description
+                        textarea.form-control(id='description' rows='3' name='description')= val_description
                     div.form-group
-                        label(for='comments') Comments: 
-                        textarea.form-control(id='comments' rows='3' name='comments')
-                
+                        label(for='tags') Tags:
+                        select.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
+                            each tag in val_tags
+                                option(value=tag)= tag
 
             div.action-group
-                button.btn.btn-primary(type='submit') Register
+                button.btn.btn-primary(type='submit') Add
                 button.btn.btn-primary(type='reset') Clear
 
 
 
 block additional-libraries
     script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
-    script(src='/javascripts/add-entry.js')
+    script(src='/javascripts/edit-entry.js')
