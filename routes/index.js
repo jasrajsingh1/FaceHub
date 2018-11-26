@@ -9,6 +9,7 @@ var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
 var userEmail = "test2@gmail.com"; 
+var mkdirp = require('mkdirp');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -281,6 +282,7 @@ async function getProjects(userInterests) {
             let image = r.image; 
             let imgExt = r.imageExtension;
             let outputFile = `images/${researchName}.${imgExt}`;
+            mkdirp('images', function(err) { console.log(err); });
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
                 let obj = { date: formatDateTime(date),
