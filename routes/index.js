@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = ""; 
+var userEmail = "test2@gmail.com"; 
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -199,6 +199,23 @@ async function getInterests() {
     }
 }
 
+function formatDateTime(dt) {
+    let hours = dt.getHours();
+    let minutes = dt.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours %= 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    let time = `${hours}:${minutes} ${ampm}`;
+    
+    let month = dt.getMonth() + 1;
+    let day = dt.getDate();
+    let year = dt.getFullYear();
+    let date = `${month}/${day}/${year}`;
+
+    return `${date} ${time}`;
+}
+
 async function getProjects(userInterests) {
     let projects = [];
     let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
@@ -218,7 +235,7 @@ async function getProjects(userInterests) {
             let outputFile = `images/${researchName}.${imgExt}`;
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
-                let obj = { date: date,
+                let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
                             description: description,
@@ -238,7 +255,6 @@ async function getProjects(userInterests) {
 router.get('/feed', async function(req, res, next) {
     let interests = await getInterests();
     let projects = await getProjects(interests);
-    console.log(projects);
     res.render('feed', { interests: interests, projects: projects });
 });
 
