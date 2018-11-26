@@ -42,8 +42,8 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
             research_name: title,
             description: description,
             interests: JSON.stringify(tags),
-            image: imageData,
-            imageExtension: imageExt
+            research_image: imageData,
+            research_imageExtension: imageExt
         };
         db.query(query, values, function (er, da) {
             if(er)throw er;
@@ -108,8 +108,8 @@ router.post('/edit/:id', function (req, res, next) {
                 research_name: title,
                 description: description,
                 interests: JSON.stringify(tags),
-                image: imageData,
-                imageExtension: imageExt
+                research_image: imageData,
+                research_imageExtension: imageExt
             };
             db.query(query, values, function (er, da) {
                 if(er)throw er;
