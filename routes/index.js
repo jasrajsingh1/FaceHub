@@ -281,7 +281,7 @@ async function getInterests() {
 
     try {
         let results = await query(userQuery);        
-        return JSON.parse(results[0].user_interests);
+        return JSON.parse(results[0].user_interests).sort();
     } catch (err) {
         console.log(err);
     }
