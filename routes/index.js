@@ -81,7 +81,8 @@ router.post('/login', function (req, res, next) {
             else {
 
                 if(result[0].password === p) {
-                    res.render('login-success', { title: 'Login Success' });
+                    //res.render('login-success', { title: 'Login Success' });
+                    res.render('feed', { title: 'Feed' });
                     userEmail = e;
                 }
 
@@ -126,6 +127,9 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
         db.query(query, values, function (er, da) {
             if(er)throw er;
         });
+
+        res.render('feed', { title: 'Feed' });
+        userEmail = email;
     });
     /*
     fs.open("uploads/"+image.filename, 'r', function (status, fd) {
