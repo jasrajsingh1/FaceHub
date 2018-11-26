@@ -8,34 +8,32 @@ block additional-styling
 block content
     div.card.container: div.card-body
         h3 #{name}'s Profile
-        hr
+        
         form(method='post' action='' enctype='multipart/form-data')
             div.form-row
-                div.form-group
-                    label(for='email') Email:
-                    input.form-control(type='email' id='email' name='email' required = "yes" value=email) 
-                    label(for='number') Phone Number:
-                    input.form-control(type='text' id='number' name='number' required = "yes") 
-            div.form-row
                 div.col-sm-4#image-container
-                    div.dropZoneContainer
-                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
-                        div.dropZoneOverlay.empty
-                            p Drag and drop your profile picture
-                            p <b>or click here.</b>
+                    img(src='images.png')
 
-                div.col-sm-8#text-container
+                div.col-sm-8#text-container 
                     div.form-group
+                        label(for='email') Email: asdfasd 
+                        br
+                        label(for='number') Phone Number: placeholder
+                        br
                         label(for='tags') Interests:
-                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
+                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]' readonly)
+                        br
+                        br
+            
+                    div.form-group
+                        
                     div.form-group
                         label(for='comments') Comments: 
                         textarea.form-control(id='comments' rows='3' name='comments')
+                    div.form-row
                 
 
-            div.action-group
-                button.btn.btn-primary(type='submit') Update
-                button.btn.btn-primary(type='reset') Clear
+        
 
 
 
