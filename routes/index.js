@@ -45,6 +45,14 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
     res.render('add-entry-success', { title: 'Submission Success' });
 });
 
+router.get('/edit/:id', function (req, res, next) {
+    let description = "description";
+    let title_name = "Post Name";
+    let tags = ["ta", "gs"];
+
+    res.render('edit-entry', {title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags})
+});
+
 //get login
 router.get('/login', function(req, res, next) {
     res.render('login', { title: 'Login' });
