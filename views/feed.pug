@@ -5,31 +5,32 @@ block additional-styling
 
 block content
   input(type='hidden' id='selected' value=selected)
-  div.filter-area
-    button.filter(data-toggle="collapse" data-target="#tabs")='Filter by tags'
-    form.collapse#tabs(method='post' action='')
-      ul.nav.nav-tabs.tabs
-        li.nav-item
-          input.nav-link.link(type='submit' value='All' id='All' name='interest')
-        each interest in interests
+  div.container
+    div.filter-area
+      button.filter(data-toggle="collapse" data-target="#tabs")='Filter by tags'
+      form.collapse#tabs(method='post' action='')
+        ul.nav.nav-tabs.tabs
           li.nav-item
-            input.nav-link.link(type='submit' value=interest id=interest name='interest')
-  div.projects
-    each project in projects
-      div.card.project
-        div.card-body.row
-          div.left
-            a(href="/")
-              img.pic(src=project.filename)
-              div.name.card-text=project.name
-          div.right
-            h4=project.title
-            div.card-text=project.description
-        div.card-footer.footer
-          div.footer-left
-            each tag in project.tags
-              span.tags=tag
-          div.footer-right.date=project.date
+            input.nav-link.link(type='submit' value='All' id='All' name='interest')
+          each interest in interests
+            li.nav-item
+              input.nav-link.link(type='submit' value=interest id=interest name='interest')
+    div.projects
+      each project in projects
+        div.card.project
+          div.card-body.row
+            div.left
+              a(href="/")
+                img.pic(src=project.filename)
+                div.name.card-text=project.name
+            div.right
+              h4=project.title
+              div.card-text=project.description
+          div.card-footer.footer
+            div.footer-left
+              each tag in project.tags
+                span.tags=tag
+            div.footer-right.date=project.date
   
 
 block additional-libraries
