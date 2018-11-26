@@ -13,13 +13,13 @@ block content
             div.form-row
                 div.form-group
                     label(for='email') Email:
-                    input.form-control(type='email' id='email' name='email' required = "yes")
+                    input.form-control(type='email' id='email' name='email' required = "yes" value=email) 
                     label(for='name') Name:
-                    input.form-control(type='text' id='name' name='name' required = "yes")
+                    input.form-control(type='text' id='name' name='name' required = "yes" value= username)
                     label(for='password') Password:
-                    input.form-control(type='password' id='password' name='password' required = "yes")
+                    input.form-control(type='password' id='password' name='password' required = "yes" value = 'password')
                     label(for='number') Phone Number:
-                    input.form-control(type='text' id='number' name='number' required = "yes")
+                    input.form-control(type='text' id='number' name='number' required = "yes") 
             div.form-row
                 div.col-sm-4#image-container
                     div.dropZoneContainer
@@ -38,7 +38,7 @@ block content
                 
 
             div.action-group
-                button.btn.btn-primary(type='submit') Register
+                button.btn.btn-primary(type='submit') Update
                 button.btn.btn-primary(type='reset') Clear
 
 
