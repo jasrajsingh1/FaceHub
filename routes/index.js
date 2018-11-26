@@ -54,24 +54,21 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
 
 router.get('/edit/:id', function (req, res, next) {
 
-    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+id+"'";
+    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+req.params['id']+"'";
     db.query(query, (err, result, fields) => {
-
         if (err) {
             console.log("ERROR");
         }
-
         else {
             let count = 0;
-
             //console.log(result);
             for(let r of result) {
                 console.log("STARTING TEST");
                 let date = r.dateOfCreation;
                 let advisor_email = r.advisor_email;
-                let research_name = r.research_name;
+                let title_name = r.research_name;
                 let description = r.description;
-                let interests = r.interests;
+                let tags = JSON.parse(r.interests);
 
                 let image = r.image;
                 let imgExt = r.imageExtension;
@@ -82,18 +79,56 @@ router.get('/edit/:id', function (req, res, next) {
 
                 count = count + 1;
 
-                //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
-
-                console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
+                res.render('edit-entry', {title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags, file : outputfile})
             }
         }
     });
+    res.status(404);
+});
 
-    let description = "description";
-    let title_name = "Post Name";
-    let tags = ["ta", "gs"];
+router.post('/edit/:id', function (req, res, next) {
+    let image = req.file;
+    let title = req.body.title;
+    let description = req.body.description;
+    let tags = req.body.tags;
+    let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    res.render('edit-entry', {title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags})
+    if(image){
+        let imageExt = image.originalname.split(".")[1];
+        fs.readFile("uploads/"+image.filename, function(err, data) {
+            if (err) { console.log(err); }
+
+            let imageData = data;
+
+            var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
+            let values = {
+                dateOfCreation: date,
+                advisor_email: userEmail,
+                research_name: title,
+                description: description,
+                interests: JSON.stringify(tags),
+                image: imageData,
+                imageExtension: imageExt
+            };
+            db.query(query, values, function (er, da) {
+                if(er)throw er;
+            });
+        });
+    } else {
+        var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
+        let values = {
+            dateOfCreation: date,
+            advisor_email: userEmail,
+            research_name: title,
+            description: description,
+            interests: JSON.stringify(tags),
+        };
+        db.query(query, values, function (er, da) {
+            if(er)throw er;
+        });
+    }
+
+    res.render('edit-entry-success', { title: 'Submission Success' });
 });
 
 //get login

@@ -15,4 +15,16 @@ function handleFileSelect(e){
 
 }
 
+function updateFile(file){
+    let img = document.getElementsByTagName('img')[0];
+    if(img == null){
+        img = document.createElement('img');
+        document.getElementsByClassName("dropZoneContainer")[0].prepend(img);
+        $('.dropZoneOverlay').removeClass('empty');
+        $('.dropZoneOverlay').addClass('filled');
+    }
+    img.src = file;
+
+}
+
 $('#tags').tagsinput('refresh');

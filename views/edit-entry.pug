@@ -7,7 +7,7 @@ block additional-styling
 
 block content
     div.card.container: div.card-body
-        h3 Submit an Idea
+        h3 Edit Submission
         hr
         form(method='post' action='' enctype='multipart/form-data')
             div.form-row
@@ -41,3 +41,5 @@ block content
 block additional-libraries
     script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
     script(src='/javascripts/edit-entry.js')
+    script.
+        updateFile('#{file}');
