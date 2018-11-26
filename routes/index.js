@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = "test2@gmail.com"; 
+var userEmail = ""; 
 var mkdirp = require('mkdirp');
 
 /* GET home page. */
@@ -279,8 +279,8 @@ async function getProjects(userInterests) {
             let description = r.description;
             let interests = JSON.parse(r.interests);
             let advisorName = r.name;
-            let image = r.image; 
-            let imgExt = r.imageExtension;
+            let image = r.research_image; 
+            let imgExt = r.research_imageExtension;
             let outputFile = `images/${researchName}.${imgExt}`;
             mkdirp('images', function(err) { console.log(err); });
             fs.writeFileSync(outputFile, image);
