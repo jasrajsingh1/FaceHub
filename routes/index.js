@@ -158,12 +158,16 @@ router.post('/login', function (req, res, next) {
                 console.log("USER LOGIN : "+query);
             }
 
+            else if(result.length === 0) {
+                res.render('login', { title: 'Login' });
+            }
+
             else {
 
                 if(result[0].password === p) {
                     //res.render('login-success', { title: 'Login Success' });
-                    res.render('feed', { title: 'Feed' });
                     userEmail = e;
+                    res.redirect('/feed');
                 }
 
                 else {
