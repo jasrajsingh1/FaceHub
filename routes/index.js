@@ -327,6 +327,7 @@ async function getProjects(userInterests) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
+                            profile: `view-account?email=${advisorEmail}`,
                             description: description,
                             tags: interests,
                             filename: outputFile };
