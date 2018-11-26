@@ -8,12 +8,12 @@ block content
   div.filter-area
     button.filter(data-toggle="collapse" data-target="#tabs")='Filter by tags'
     form.collapse#tabs(method='post' action='')
-      ul.tabs
-        li.tab
-          input.link(type='submit' value='All' id='All' name='interest')
+      ul.nav.nav-tabs.tabs
+        li.nav-item
+          input.nav-link.link(type='submit' value='All' id='All' name='interest')
         each interest in interests
-          li.tab
-            input.link(type='submit' value=interest id=interest name='interest')
+          li.nav-item
+            input.nav-link.link(type='submit' value=interest id=interest name='interest')
   div.projects
     each project in projects
       div.card.project
@@ -24,11 +24,12 @@ block content
               div.name.card-text=project.name
           div.right
             h4=project.title
-            div.description.card-text=project.description
-        div
-          each tag in project.tags
-            span.tags=tag
-        small.date=project.date
+            div.card-text=project.description
+        div.card-footer.footer
+          div.footer-left
+            each tag in project.tags
+              span.tags=tag
+          div.footer-right.date=project.date
   
 
 block additional-libraries

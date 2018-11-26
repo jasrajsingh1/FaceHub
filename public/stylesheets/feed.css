@@ -17,6 +17,10 @@ body {
   color: white;
 }
 
+#tabs {
+  padding: 10px;
+}
+
 .tabs {
   list-style-type: none;
 }
@@ -29,9 +33,6 @@ body {
   background-color: rgb(139, 139, 139);
   margin: 3px;
   border-radius: 5px 12px 5px;
-}
-
-.projects {
 }
 
 .project {
@@ -72,21 +73,35 @@ body {
   text-align: center;
 }
 
-.title {
-
+.footer {
+  background-color: white;
 }
 
-.description {
+.footer-left {
+  float: left;
+  width: 600px;
+}
+
+.footer-right {
+  float: left;
+  width: 200px;
+}
+
+.footer:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 .tags {
-  background-color: #5a5a5a;
+  background-color: #858585;
   border: none;
   color: #ffffff;
   text-align: center;
   padding: 4px 8px;
-  margin: 4px 6px;
+  margin: 0px 6px;
   border-radius: 12px;
+  font-size: 10px;
 }
 
 .date {

@@ -8,7 +8,7 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = ""; 
+var userEmail = "test2@gmail.com"; 
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -28,20 +28,27 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
     let tags = req.body.tags;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    console.log("title is: "+title);
+    let imageExt = image.originalname.split(".")[1];
+    fs.readFile("uploads/"+image.filename, function(err, data) {
+        if (err) { console.log(err); }
 
-    //TODO Add to DB here
-    let query = "INSERT INTO ResearchIdea (dateOfCreation, advisor_email, research_name, description, interests) VALUES ('" +
-                            date + "', '" + userEmail + "', '" + title + "', '" + description + "', '" + JSON.stringify(tags) + "')";
+        let imageData = data;
 
-    db.query(query, (err, result) => {
-        if (err) {
-            console.log("Query is: "+query);
-            console.log(err);
-            //return res.status(500).send(err);
-        }
-        //res.redirect('/');
+        var query = "INSERT INTO ResearchIdea SET ?";
+        let values = {
+            dateOfCreation: date,
+            advisor_email: userEmail,
+            research_name: title,
+            description: description,
+            interests: JSON.stringify(tags),
+            image: imageData,
+            imageExtension: imageExt
+        };
+        db.query(query, values, function (er, da) {
+            if(er)throw er;
+        });
     });
+
     res.render('add-entry-success', { title: 'Submission Success' });
 });
 
@@ -82,7 +89,8 @@ router.post('/login', function (req, res, next) {
             else {
 
                 if(result[0].password === p) {
-                    res.render('login-success', { title: 'Login Success' });
+                    //res.render('login-success', { title: 'Login Success' });
+                    res.render('feed', { title: 'Feed' });
                     userEmail = e;
                 }
 
@@ -127,6 +135,9 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
         db.query(query, values, function (er, da) {
             if(er)throw er;
         });
+
+        res.render('feed', { title: 'Feed' });
+        userEmail = email;
     });
     /*
     fs.open("uploads/"+image.filename, 'r', function (status, fd) {
@@ -200,6 +211,23 @@ async function getInterests() {
     }
 }
 
+function formatDateTime(dt) {
+    let hours = dt.getHours();
+    let minutes = dt.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours %= 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    let time = `${hours}:${minutes} ${ampm}`;
+    
+    let month = dt.getMonth() + 1;
+    let day = dt.getDate();
+    let year = dt.getFullYear();
+    let date = `${month}/${day}/${year}`;
+
+    return `${date} ${time}`;
+}
+
 async function getProjects(userInterests) {
     let projects = [];
     let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
@@ -216,10 +244,10 @@ async function getProjects(userInterests) {
             let advisorName = r.name;
             let image = r.image; 
             let imgExt = r.imageExtension;
-            let outputFile = `images/${advisorName}.${imgExt}`;
+            let outputFile = `images/${researchName}.${imgExt}`;
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
-                let obj = { date: date,
+                let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
                             description: description,
@@ -239,7 +267,6 @@ async function getProjects(userInterests) {
 router.get('/feed', async function(req, res, next) {
     let interests = await getInterests();
     let projects = await getProjects(interests);
-    console.log(projects);
     res.render('feed', { interests: interests, projects: projects });
 });
 
