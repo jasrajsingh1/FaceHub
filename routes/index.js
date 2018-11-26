@@ -158,12 +158,16 @@ router.post('/login', function (req, res, next) {
                 console.log("USER LOGIN : "+query);
             }
 
+            else if(result.length === 0) {
+                res.render('login', { title: 'Login' });
+            }
+
             else {
 
                 if(result[0].password === p) {
                     //res.render('login-success', { title: 'Login Success' });
-                    res.render('feed', { title: 'Feed' });
                     userEmail = e;
+                    res.redirect('/feed');
                 }
 
                 else {
@@ -208,7 +212,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             if(er)throw er;
         });
 
-        res.render('feed', { title: 'Feed' });
+        res.redirect('/feed');
         userEmail = email;
     });
     /*
@@ -323,6 +327,7 @@ async function getProjects(userInterests) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
+                            profile: `view-account?email=${advisorEmail}`,
                             description: description,
                             tags: interests,
                             filename: outputFile };
