@@ -272,7 +272,44 @@ router.post('/feed', async function(req, res, next) {
 
 router.get('/test', function (req, res, next) {
 
-    let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation";
+    // let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation";
+    // db.query(query, (err, result, fields) => {
+
+    //     if (err) {
+    //         console.log("ERROR");
+    //     }
+
+    //     else {
+    //         let count = 0;
+
+    //         //console.log(result);
+    //         for(let r of result) {
+    //             console.log("STARTING TEST");
+    //             let date = r.dateOfCreation;
+    //             let advisor_email = r.advisor_email;
+    //             let research_name = r.research_name;
+    //             let description = r.description;
+    //             let interests = r.interests;
+    //             let advisorName = r.name;
+    //             let phoneNumber = r.phonenumber;
+    //             let image = r.image; 
+    //             let imgExt = r.imageExtension;
+    //             let outputfile = "outputImg" + count + "."+ imgExt;
+    //             console.log("WRITING IMAGE");
+    //             const buf = new Buffer(image, "binary");
+    //             fs.writeFileSync(outputfile, buf);
+
+    //             count = count + 1;
+
+    //             //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
+
+    //             console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
+    //         }
+    //     }  
+    // });
+
+    let researchName = "test2";
+    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+researchName+"'";
     db.query(query, (err, result, fields) => {
 
         if (err) {
@@ -290,11 +327,10 @@ router.get('/test', function (req, res, next) {
                 let research_name = r.research_name;
                 let description = r.description;
                 let interests = r.interests;
-                let advisorName = r.name;
-                let phoneNumber = r.phonenumber;
+                
                 let image = r.image; 
                 let imgExt = r.imageExtension;
-                let outputfile = "outputImg" + count + "."+ imgExt;
+                let outputfile = "testImg" + count + "."+ imgExt;
                 console.log("WRITING IMAGE");
                 const buf = new Buffer(image, "binary");
                 fs.writeFileSync(outputfile, buf);
@@ -307,6 +343,7 @@ router.get('/test', function (req, res, next) {
             }
         }  
     });
+
 });
 
 module.exports = router;
