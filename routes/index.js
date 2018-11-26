@@ -53,6 +53,42 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
 });
 
 router.get('/edit/:id', function (req, res, next) {
+
+    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+id+"'";
+    db.query(query, (err, result, fields) => {
+
+        if (err) {
+            console.log("ERROR");
+        }
+
+        else {
+            let count = 0;
+
+            //console.log(result);
+            for(let r of result) {
+                console.log("STARTING TEST");
+                let date = r.dateOfCreation;
+                let advisor_email = r.advisor_email;
+                let research_name = r.research_name;
+                let description = r.description;
+                let interests = r.interests;
+
+                let image = r.image;
+                let imgExt = r.imageExtension;
+                let outputfile = "testImg" + count + "."+ imgExt;
+                console.log("WRITING IMAGE");
+                const buf = new Buffer(image, "binary");
+                fs.writeFileSync(outputfile, buf);
+
+                count = count + 1;
+
+                //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
+
+                console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
+            }
+        }
+    });
+
     let description = "description";
     let title_name = "Post Name";
     let tags = ["ta", "gs"];

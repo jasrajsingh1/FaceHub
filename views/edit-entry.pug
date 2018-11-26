@@ -28,7 +28,7 @@ block content
                         textarea.form-control(id='description' rows='3' name='description')= val_description
                     div.form-group
                         label(for='tags') Tags:
-                        select.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
+                        select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
                             each tag in val_tags
                                 option(value=tag)= tag
 
