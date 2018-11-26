@@ -263,7 +263,93 @@ NOTES: TRY TO SEE HOW TO INSERT PROPERLY INTO ACCOUNTS DB
 INSERT IMAGE INTO DB
 FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
+//edit account
+router.get('/view-account', async function(req, res, next){
+    let email=req.query.email;
+    let name, phonenumber, image, comments, interests=null;
+    let data = await getAll(email);
+    console.log('***email is:' + email);
+    name=data[0].name;
+    phonenumber=data[0].phonenumber;
+    image=data[0].image;
+    interests=JSON.parse(data[0].user_interests);
+    comments=data[0].comments;
+    let imgExt=data[0].imageExtension;
+    let path=`images/${email}.${imgExt}`;
+    console.log('***path is:' + path);
+    mkdirp('images', function(err) { console.log(err); });
+    fs.writeFileSync(path, image);
+    res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, comments:comments, path:path});
+    
+});
 
+
+router.get('/edit-account', async function (req, res, next) {
+    let name, phonenumber, image, interests=null;
+    let data = await getAll(userEmail);
+    name=data[0].name;
+    phonenumber=data[0].phonenumber;
+    image=data[0].image;
+    interests=JSON.parse(data[0].user_interests);
+    let comments=data[0].comments;
+    let imgExt=data[0].imageExtension;
+    let path=`images/${userEmail}.${imgExt}`;
+    mkdirp('images', function(err) { console.log(err); });
+    fs.writeFileSync(path, image);
+
+    res.render('edit-account', { title: 'Edit Account', email:userEmail, username:name, phonenumber:phonenumber, interests:interests, comments:comments, path:path});
+});
+
+router.post('/edit-account', upload.single('pic'), function (req, res, next) {
+        let image = req.file;
+        let name = req.body.name;
+        let number = req.body.number;
+        let tags = req.body.tags;
+        let tagStr = JSON.stringify(tags);
+        let imageExt = image.originalname.split(".")[1];
+        fs.readFile("uploads/"+image.filename, function(err, data) {
+            if (err) { console.log(err); }
+    
+            let imageData = data;
+    
+            var query = 'UPDATE Accounts SET name=?, phonenumber= ?, image= ?, imageExtension= ?, user_interests= ?  WHERE email= ?';
+            let values = [name, number, imageData, imageExt, tagStr, userEmail];
+    
+            db.query(query, values, function (er, da) {
+                console.log(query.sql);
+                if(er)throw er;
+            });
+            
+
+
+            res.redirect('/feed');
+        
+        });
+    });
+    
+
+async function getAll(email) {
+    let userQuery = `SELECT * FROM Accounts where email=?`;
+
+    try {
+        let results = await query2(userQuery, email);
+        return results;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+function query2(sql, values) {
+    return new Promise((resolve, reject) => {
+        db.query(sql, values,(err, result, fields) => {
+            if (err) {
+                return reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
 function query(sql) {
     return new Promise((resolve, reject) => {
         db.query(sql, (err, result, fields) => {

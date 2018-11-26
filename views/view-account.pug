@@ -4,24 +4,27 @@ block additional-styling
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
     link(rel='stylesheet' href='/stylesheets/create-account.css')
+    link(rel='stylesheet' href='/stylesheets/view-account.css')
 
 block content
     div.card.container: div.card-body
-        h3 #{name}'s Profile
+        h3 #{username}'s Profile
         
         form(method='post' action='' enctype='multipart/form-data')
             div.form-row
                 div.col-sm-4#image-container
-                    img(src='images.png')
+                    img.pic(src=path)
 
                 div.col-sm-8#text-container 
                     div.form-group
-                        label(for='email') Email: asdfasd 
+                        label(for='email') Email: #{email} 
                         br
-                        label(for='number') Phone Number: placeholder
+                        label(for='number') Phone Number: #{phonenumber}
+                            
                         br
                         label(for='tags') Interests:
-                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]' readonly)
+                            each tag in interests
+                                span.tags=tag
                         br
                         br
             
