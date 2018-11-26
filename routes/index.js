@@ -208,7 +208,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             if(er)throw er;
         });
 
-        res.render('feed', { title: 'Feed' });
+        res.redirect('/feed');
         userEmail = email;
     });
     /*
