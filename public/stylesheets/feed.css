@@ -10,6 +10,10 @@ body {
   margin-left: auto;
 }
 
+.nav-tabs {
+  border-bottom: 0px !important;
+}
+
 .filter-area {
   background-color: rgb(0, 61, 192);
   width: 900px;

@@ -4,38 +4,43 @@ block additional-styling
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
     link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
     link(rel='stylesheet' href='/stylesheets/create-account.css')
+    link(rel='stylesheet' href='/stylesheets/view-account.css')
 
 block content
     div.card.container: div.card-body
-        h3 #{name}'s Profile
-        hr
+        h3 #{username}'s Profile
+        
         form(method='post' action='' enctype='multipart/form-data')
             div.form-row
-                div.form-group
-                    label(for='email') Email:
-                    input.form-control(type='email' id='email' name='email' required = "yes" value=email) 
-                    label(for='number') Phone Number:
-                    input.form-control(type='text' id='number' name='number' required = "yes") 
-            div.form-row
                 div.col-sm-4#image-container
-                    div.dropZoneContainer
-                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
-                        div.dropZoneOverlay.empty
-                            p Drag and drop your profile picture
-                            p <b>or click here.</b>
+                    img.pic(src=path)
 
-                div.col-sm-8#text-container
+                div.col-sm-8#text-container 
                     div.form-group
+                        label(for='email') Email: #{email} 
+                        br
+                        label(for='number') Phone Number: #{phonenumber}
+                            
+                        br
                         label(for='tags') Interests:
-                        input.form-control(type='text' id='tags' data-role='tagsinput' name='tags[]')
-                    div.form-group
-                        label(for='comments') Comments: 
-                        textarea.form-control(id='comments' rows='3' name='comments')
+                            each tag in interests
+                                span.tags=tag
+                        br
+                        br
+                        br
+                        br
+                        br
+                        br
+                        br
+                        br
+                        br
+                        
+            
+                        
+                    
                 
 
-            div.action-group
-                button.btn.btn-primary(type='submit') Update
-                button.btn.btn-primary(type='reset') Clear
+        
 
 
 
