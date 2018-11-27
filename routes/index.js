@@ -15,8 +15,7 @@ function checkSignIn(req, res, next) {
     if (req.session.userEmail) {
         next();
     } else {
-        let error = new Error("Sign in first");
-        next(error);
+        res.render('error', {message: "Sign in first"});
     }
 }
 
@@ -56,7 +55,7 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
             research_imageExtension: imageExt
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console(er);
         });
     });
 
@@ -123,7 +122,7 @@ router.post('/edit/:id', checkSignIn, function (req, res, next) {
                 research_imageExtension: imageExt
             };
             db.query(query, values, function (er, da) {
-                if(er)throw er;
+                if(er) console.log(er);
             });
         });
     } else {
@@ -136,7 +135,7 @@ router.post('/edit/:id', checkSignIn, function (req, res, next) {
             interests: JSON.stringify(tags),
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console.log(er);
         });
     }
 
@@ -232,7 +231,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             user_interests: tagStr
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console.log(er);
         });
 
         req.session.userEmail = email;
@@ -259,7 +258,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
                     user_interests: tagStr
                 };
             db.query(query, values, function (er, da) {
-                if(er)throw er;
+                if(er) console.log(er);
             });
     
         });
@@ -288,7 +287,7 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 //edit account
 router.get('/view-account', checkSignIn, async function(req, res, next){
-    let email=req.query.email;
+    let email=req.query.email || req.session.userEmail;
     let name, phonenumber, image, comments, interests=null;
     let data = await getAll(email);
     console.log('***email is:' + email);
@@ -342,7 +341,7 @@ router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, r
     
             db.query(query, values, function (er, da) {
                 console.log(query.sql);
-                if(er)throw er;
+                if(er) console.log(er);
             });
             
 
