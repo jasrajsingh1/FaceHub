@@ -31,9 +31,8 @@ block content
                     div.form-group
                         label(for='tags') Interests:
                         select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
-                            div.bootstrap-tagsinput
-                                    span.tag.label.label-info
-                                        |asdf
+                            each tag in interests
+                                option(value=tag)= tag
 
                                 
                     div.form-group
