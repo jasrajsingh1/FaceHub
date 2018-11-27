@@ -71,6 +71,6 @@ module.exports = app;
 
 
 
-app.listen(port, function() {
+app.listen(process.env.PORT || port, function() {
   console.log('Example app listening on port '+port+'!');
 });
