@@ -41,13 +41,46 @@ block content
       .container
         .row
           .col-lg-8.mx-auto
-            h2 About this site
-            p.lead
-              | Made using Node.js and Express
+            h2 Meet the Team
+
+             style.
+               ul#menu li {
+                display:inline;
+                }
+
+        .row
+          .column
+            .card
+              img(src='http://localhost:5000/userImages/jasraj.jpg', alt='Jasraj', style='width:100%')
+              .container
+                center
+                  h5 Jasraj Singh
+                
+          .column
+            .card
+              img(src='http://localhost:5000/userImages/kenneth.jpeg', alt='Kenneth', style='width:100%')
+              .container
+                center
+                  h5 Kenneth Jiang
+          
+          .column
+            .card
+              img(src='http://localhost:5000/userImages/luke.jpg', alt='Luke', style='width:100%')
+              .container
+                center
+                  h5 Luke Yoon
+          
+          .column
+            .card
+              img(src='http://localhost:5000/userImages/ethan.jpg', alt='Ethan', style='width:100%')
+              .container
+                center
+                  h5 Ethan Farkas
+               
     // Footer
     footer.py-5.bg-dark
       .container
-        p.m-0.text-center.text-white Ethan Farkas, Jasraj Singh, Kenneth Jiang, Luke Yoon
+        p.m-0.text-center.text-white &copy;GitBook
 
 block additional-libraries
       

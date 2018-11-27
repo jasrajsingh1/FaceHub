@@ -13,11 +13,11 @@ block content
             div.form-row
                 div.form-group
                     label(for='title') Title:
-                    input.form-control(type='text' id='title' name='title')
+                    input.form-control(type='text' id='title' name='title' required = "yes")
             div.form-row
                 div.col-sm-4#image-container
                     div.dropZoneContainer
-                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
+                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif' required = "yes")
                         div.dropZoneOverlay.empty
                             p Drag and drop your image
                             p <b>or click here.</b>
@@ -25,10 +25,10 @@ block content
                 div.col-sm-8#text-container
                     div.form-group
                         label(for='description') Description
-                        textarea.form-control(id='description' rows='3' name='description')
+                        textarea.form-control(id='description' rows='3' name='description' required = "yes")
                     div.form-group
                         label(for='tags') Tags:
-                        select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
+                        select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]' required = "yes")
 
             div.action-group
                 button.btn.btn-primary(type='submit') Add
