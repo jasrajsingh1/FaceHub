@@ -25,25 +25,25 @@ function verify(password, hashed) {
 }
 
 function error_redirect(res){
-    res.render('error', {message: "Database has Failed"});
+    res.render('error', { authorized: req.session.username, message: "Database has Failed"});
 }
 
 function checkSignIn(req, res, next) {
     if (req.session.username) {
         next();
     } else {
-        res.render('error', {message: "Sign in first"});
+        res.render('error', {authorized: req.session.username, message: "Sign in first"});
     }
 }
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('home', { title: 'GitBook' });
+  res.render('home', { authorized: req.session.username, title: 'GitBook' });
 });
 
 /* GET add idea page. */
 router.get('/add-entry', checkSignIn, function(req, res, next) {
-    res.render('add-entry', { title: 'Submit a New Idea' });
+    res.render('add-entry', { authorized: req.session.username, title: 'Submit a New Idea' });
 });
 
 /* POST add idea page. */
@@ -77,7 +77,7 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
         });
     });
 
-    res.render('add-entry-success', { title: 'Submission Success' });
+    res.render('add-entry-success', { authorized: req.session.username, title: 'Submission Success' });
 });
 
 router.get('/edit/:id', checkSignIn, function (req, res, next) {
@@ -107,7 +107,7 @@ router.get('/edit/:id', checkSignIn, function (req, res, next) {
 
                 count = count + 1;
 
-                res.render('edit-entry', {title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags, file : outputfile})
+                res.render('edit-entry', {authorized: req.session.username, title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags, file : outputfile})
             }
         }
     });
@@ -124,7 +124,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
     let researchUsername = await getProjectUsername(req.params['id']);
 
     if (username !== researchUsername) {
-        res.render('error', {message: "Cannot edit another user's post"});
+        res.render('error', {authorized: req.session.username, message: "Cannot edit another user's post"});
     }
 
     if(image){
@@ -163,12 +163,12 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
         });
     }
 
-    res.render('edit-entry-success', { title: 'Submission Success' });
+    res.render('edit-entry-success', { authorized: req.session.username, title: 'Submission Success' });
 });
 
 //get login
 router.get('/login', function(req, res, next) {
-    res.render('login', { title: 'Login' });
+    res.render('login', { authorized: req.session.username, title: 'Login' });
 });
 
 /* POST login page. */
@@ -183,7 +183,7 @@ router.post('/login', function (req, res, next) {
         }
 
         else if(result.length === 0) {
-            res.render('login', { title: 'Login' });
+            res.render('login', { authorized: req.session.username, title: 'Login' });
         }
 
         else {
@@ -194,7 +194,7 @@ router.post('/login', function (req, res, next) {
             }
 
             else {
-                res.render('login', { title: 'Login' });
+                res.render('login', { authorized: req.session.username, title: 'Login' });
             } 
         }  
     });
@@ -213,7 +213,7 @@ router.get('/logout', function(req, res, next) {
 });
 
 router.get('/create-login', function (req, res, next) {
-    res.render('create-account', { title: 'Register' });
+    res.render('create-account', { authorized: req.session.username, title: 'Register' });
 });
     
 
@@ -279,7 +279,7 @@ router.get('/view-account', checkSignIn, async function(req, res, next){
     let path=`images/${username}.${imgExt}`;
     fs.writeFileSync(path, image);
 
-    res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
+    res.render('view-account', {authorized: req.session.username, title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
 });
 
 
@@ -296,7 +296,7 @@ router.get('/edit-account', checkSignIn, async function (req, res, next) {
     let path=`images/${username}.${imgExt}`;
     fs.writeFileSync(path, image);
 
-    res.render('edit-account', { title: 'Edit Account', email:email, name:name, phonenumber:phonenumber, interests:interests, path:path});
+    res.render('edit-account', { authorized: req.session.username, title: 'Edit Account', email:email, name:name, phonenumber:phonenumber, interests:interests, path:path});
 });
 
 router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, res, next) {
@@ -486,7 +486,7 @@ router.get('/feed', checkSignIn, async function(req, res, next) {
     let username = req.session.username;
     let interests = await getInterests(username);
     let projects = await getProjects(interests);
-    res.render('feed', { interests: interests, projects: projects });
+    res.render('feed', { authorized: req.session.username, interests: interests, projects: projects });
 });
 
 /* POST feed page */
@@ -495,7 +495,7 @@ router.post('/feed', checkSignIn, async function(req, res, next) {
     let interests = await getInterests(username);
     let selected = req.body.interest === "All" ? interests: [req.body.interest];
     let projects = await getProjects(selected);
-    res.render('feed', { selected: req.body.interest, interests: interests, projects: projects});
+    res.render('feed', { authorized: req.session.username, selected: req.body.interest, interests: interests, projects: projects});
 });
 
 module.exports = router;
