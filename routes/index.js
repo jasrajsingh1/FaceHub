@@ -166,8 +166,6 @@ router.post('/login', function (req, res, next) {
     //TODO Add to DB here
     let query = "SELECT password FROM Accounts WHERE email = '" + e + "'";
     db.query(query, (err, result, fields) => {
-
-        console.log(result[0].password);
             
             if (err) {
                 console.log("USER LOGIN : "+query);
@@ -178,6 +176,8 @@ router.post('/login', function (req, res, next) {
             }
 
             else {
+
+                console.log(result[0].password);
 
                 if(result[0].password === p) {
                     //res.render('login-success', { title: 'Login Success' });
