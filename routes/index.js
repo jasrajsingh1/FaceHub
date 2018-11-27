@@ -288,22 +288,23 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 //edit account
 router.get('/view-account', checkSignIn, async function(req, res, next){
     let email=req.query.email || req.session.userEmail;
-    let name, phonenumber, image, comments, interests=null;
+    let name, phonenumber, image, interests=null;
     let data = await getAll(email);
     let projects = await getUserProjects(email);
-    console.log('***email is:' + email);
+    
     name=data[0].name;
     phonenumber=data[0].phonenumber;
     image=data[0].image;
     interests=JSON.parse(data[0].user_interests);
     comments=data[0].comments;
+
     let imgExt=data[0].imageExtension;
     let path=`images/${email}.${imgExt}`;
     console.log('***path is:' + path);
     mkdirp('images', function(err) { console.log(err); });
     fs.writeFileSync(path, image);
+
     res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
-    
 });
 
 
@@ -315,13 +316,12 @@ router.get('/edit-account', checkSignIn, async function (req, res, next) {
     phonenumber=data[0].phonenumber;
     image=data[0].image;
     interests=JSON.parse(data[0].user_interests);
-    let comments=data[0].comments;
     let imgExt=data[0].imageExtension;
     let path=`images/${userEmail}.${imgExt}`;
     mkdirp('images', function(err) { console.log(err); });
     fs.writeFileSync(path, image);
 
-    res.render('edit-account', { title: 'Edit Account', email:userEmail, username:name, phonenumber:phonenumber, interests:interests, comments:comments, path:path});
+    res.render('edit-account', { title: 'Edit Account', email:userEmail, username:name, phonenumber:phonenumber, interests:interests, path:path});
 });
 
 router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, res, next) {
@@ -475,7 +475,7 @@ async function getUserProjects(email) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
-                            profile: `view-account?email=${advisorEmail}`,
+                            profile: `view-account`,
                             description: description,
                             tags: interests,
                             filename: outputFile };
@@ -506,7 +506,7 @@ router.post('/feed', checkSignIn, async function(req, res, next) {
     res.render('feed', { selected: req.body.interest, interests: interests, projects: projects});
 });
 
-router.get('/test', function (req, res, next) {
+/*router.get('/test', function (req, res, next) {
 
     // let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation";
     // db.query(query, (err, result, fields) => {
@@ -580,7 +580,7 @@ router.get('/test', function (req, res, next) {
         }  
     });
 
-});
+});*/
 
 module.exports = router;
 
