@@ -9,32 +9,57 @@ block content
     div.card.container: div.card-body
         h3 Create an Account
         hr
-        form(method='post' action='' enctype='multipart/form-data')
+        form(method='post' action='' enctype='multipart/form-data' onsubmit="return validate()")
+
             div.form-row
-                div.form-group
+                div.col-sm-4#image-container
+                    div.dropZoneContainer
+                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif' required = "yes")
+                        div.dropZoneOverlay.empty
+                            p Drag and drop your profile picture
+                            p <b>or click here.</b>
+                
+                div.col-sm-8#text-container
                     label(for='email') Email:
                     input.form-control(type='email' id='email' name='email' required = "yes")
                     label(for='name') Name:
                     input.form-control(type='text' id='name' name='name' required = "yes")
                     label(for='password') Password:
                     input.form-control(type='password' id='password' name='password' required = "yes")
+                    label(for='password') Confirm Password:
+                    input.form-control(type='password' id='confirmPassword' name='confirmPassword' required = "yes")
+                    
+                div.form-group 
+
+            div.form-row
+                div.form-group
                     label(for='number') Phone Number:
                     input.form-control(type='text' id='number' name='number' required = "yes")
-            div.form-row
-                div.col-sm-4#image-container
-                    div.dropZoneContainer
-                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
-                        div.dropZoneOverlay.empty
-                            p Drag and drop your profile picture
-                            p <b>or click here.</b>
+                    label(for='tags') Interests:
+                    select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]' required = "yes")
 
-                div.col-sm-8#text-container
-                    div.form-group
-                        label(for='tags') Interests:
-                        select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
-                    div.form-group
-                        label(for='comments') Comments: 
-                        textarea.form-control(id='comments' rows='3' name='comments')
+
+
+
+
+            //- div.form-row
+            //-     div.form-group
+            //-         label(for='email') Email:
+            //-         input.form-control(type='email' id='email' name='email' required = "yes")
+            //-         label(for='name') Name:
+            //-         input.form-control(type='text' id='name' name='name' required = "yes")
+            //-         label(for='password') Password:
+            //-         input.form-control(type='password' id='password' name='password' required = "yes")
+            //-         label(for='number') Phone Number:
+            //-         input.form-control(type='text' id='number' name='number' required = "yes")
+            
+            //-     div.col-sm-8#text-container
+            //-         div.form-group
+            //-             label(for='tags') Interests:
+            //-             select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
+            //-         div.form-group
+            //-             label(for='comments') Comments: 
+            //-             textarea.form-control(id='comments' rows='3' name='comments')
                 
 
             div.action-group
@@ -45,4 +70,4 @@ block content
 
 block additional-libraries
     script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
-    script(src='/javascripts/add-entry.js')
+    script(src='/javascripts/create-account.js')

@@ -12,5 +12,4 @@ function handleFileSelect(e){
         }
         img.src = reader.result;
     };
-
 }
