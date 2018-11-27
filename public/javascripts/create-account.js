@@ -13,3 +13,24 @@ function handleFileSelect(e){
         img.src = reader.result;
     };
 }
+
+function validate() {
+
+    let p = document.getElementById("password").value;
+    let cp = document.getElementById("confirmPassword").value;
+    let phoneNumber = document.getElementById("number").value;
+    let msg = "";
+
+
+    if(p !== cp) {
+        msg += "Passwords don't match\n";
+    }
+
+    if(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(phoneNumber) === false) {
+        msg += "Phone number is incorrect. Please format it correctly\n"
+    }
+
+    if(msg !== "") {
+        alert(msg);
+    }
+}
