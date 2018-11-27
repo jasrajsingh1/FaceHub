@@ -9,8 +9,16 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var userEmail = ""; 
 var mkdirp = require('mkdirp');
+
+function checkSignIn(req, res, next) {
+    if (req.session.userEmail) {
+        next();
+    } else {
+        let error = new Error("Sign in first");
+        next(error);
+    }
+}
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -18,16 +26,17 @@ router.get('/', function(req, res, next) {
 });
 
 /* GET add idea page. */
-router.get('/add-entry', function(req, res, next) {
+router.get('/add-entry', checkSignIn, function(req, res, next) {
     res.render('add-entry', { title: 'Submit a New Idea' });
 });
 
 /* POST add idea page. */
-router.post('/add-entry', upload.single('pic'), function (req, res, next) {
+router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res, next) {
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
     let tags = req.body.tags;
+    let userEmail = req.session.userEmail;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     let imageExt = image.originalname.split(".")[1];
@@ -54,7 +63,7 @@ router.post('/add-entry', upload.single('pic'), function (req, res, next) {
     res.render('add-entry-success', { title: 'Submission Success' });
 });
 
-router.get('/edit/:id', function (req, res, next) {
+router.get('/edit/:id', checkSignIn, function (req, res, next) {
 
     let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+req.params['id']+"'";
     db.query(query, (err, result, fields) => {
@@ -88,11 +97,12 @@ router.get('/edit/:id', function (req, res, next) {
     res.status(404);
 });
 
-router.post('/edit/:id', function (req, res, next) {
+router.post('/edit/:id', checkSignIn, function (req, res, next) {
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
     let tags = req.body.tags;
+    let userEmail = req.session.userEmail;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     if(image){
@@ -167,7 +177,7 @@ router.post('/login', function (req, res, next) {
 
                 if(result[0].password === p) {
                     //res.render('login-success', { title: 'Login Success' });
-                    userEmail = e;
+                    req.session.userEmail = e;
                     res.redirect('/feed');
                 }
 
@@ -213,8 +223,8 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             if(er)throw er;
         });
 
+        req.session.userEmail = email;
         res.redirect('/feed');
-        userEmail = email;
     });
     /*
     fs.open("uploads/"+image.filename, 'r', function (status, fd) {
@@ -265,7 +275,7 @@ INSERT IMAGE INTO DB
 FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 //edit account
-router.get('/view-account', async function(req, res, next){
+router.get('/view-account', checkSignIn, async function(req, res, next){
     let email=req.query.email;
     let name, phonenumber, image, comments, interests=null;
     let data = await getAll(email);
@@ -285,7 +295,8 @@ router.get('/view-account', async function(req, res, next){
 });
 
 
-router.get('/edit-account', async function (req, res, next) {
+router.get('/edit-account', checkSignIn, async function (req, res, next) {
+    let userEmail = req.session.userEmail;
     let name, phonenumber, image, interests=null;
     let data = await getAll(userEmail);
     name=data[0].name;
@@ -301,11 +312,12 @@ router.get('/edit-account', async function (req, res, next) {
     res.render('edit-account', { title: 'Edit Account', email:userEmail, username:name, phonenumber:phonenumber, interests:interests, comments:comments, path:path});
 });
 
-router.post('/edit-account', upload.single('pic'), function (req, res, next) {
+router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, res, next) {
         let image = req.file;
         let name = req.body.name;
         let number = req.body.number;
         let tags = req.body.tags;
+        let userEmail = req.session.userEmail;
         let tagStr = JSON.stringify(tags);
         let imageExt = image.originalname.split(".")[1];
         fs.readFile("uploads/"+image.filename, function(err, data) {
@@ -363,7 +375,7 @@ function query(sql) {
     });
 }
 
-async function getInterests() {
+async function getInterests(userEmail) {
     let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
 
     try {
@@ -429,15 +441,17 @@ async function getProjects(userInterests) {
 }
 
 /* GET feed page*/
-router.get('/feed', async function(req, res, next) {
-    let interests = await getInterests();
+router.get('/feed', checkSignIn, async function(req, res, next) {
+    let userEmail = req.session.userEmail;
+    let interests = await getInterests(userEmail);
     let projects = await getProjects(interests);
     res.render('feed', { interests: interests, projects: projects });
 });
 
 /* POST feed page */
-router.post('/feed', async function(req, res, next) {
-    let interests = await getInterests();
+router.post('/feed', checkSignIn, async function(req, res, next) {
+    let userEmail = req.session.userEmail;
+    let interests = await getInterests(userEmail);
     let selected = req.body.interest === "All" ? interests: [req.body.interest];
     let projects = await getProjects(selected);
     res.render('feed', { selected: req.body.interest, interests: interests, projects: projects});
