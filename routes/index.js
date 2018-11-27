@@ -15,8 +15,7 @@ function checkSignIn(req, res, next) {
     if (req.session.userEmail) {
         next();
     } else {
-        let error = new Error("Sign in first");
-        next(error);
+        res.render('error', {message: "Sign in first"});
     }
 }
 
@@ -56,7 +55,7 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
             research_imageExtension: imageExt
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console(er);
         });
     });
 
@@ -123,7 +122,7 @@ router.post('/edit/:id', checkSignIn, function (req, res, next) {
                 research_imageExtension: imageExt
             };
             db.query(query, values, function (er, da) {
-                if(er)throw er;
+                if(er) console.log(er);
             });
         });
     } else {
@@ -136,7 +135,7 @@ router.post('/edit/:id', checkSignIn, function (req, res, next) {
             interests: JSON.stringify(tags),
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console.log(er);
         });
     }
 
@@ -232,7 +231,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             user_interests: tagStr
         };
         db.query(query, values, function (er, da) {
-            if(er)throw er;
+            if(er) console.log(er);
         });
 
         req.session.userEmail = email;
@@ -259,7 +258,7 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
                     user_interests: tagStr
                 };
             db.query(query, values, function (er, da) {
-                if(er)throw er;
+                if(er) console.log(er);
             });
     
         });
@@ -288,9 +287,10 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 //edit account
 router.get('/view-account', checkSignIn, async function(req, res, next){
-    let email=req.query.email;
+    let email=req.query.email || req.session.userEmail;
     let name, phonenumber, image, comments, interests=null;
     let data = await getAll(email);
+    let projects = await getUserProjects(email);
     console.log('***email is:' + email);
     name=data[0].name;
     phonenumber=data[0].phonenumber;
@@ -302,7 +302,7 @@ router.get('/view-account', checkSignIn, async function(req, res, next){
     console.log('***path is:' + path);
     mkdirp('images', function(err) { console.log(err); });
     fs.writeFileSync(path, image);
-    res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, comments:comments, path:path});
+    res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
     
 });
 
@@ -342,7 +342,7 @@ router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, r
     
             db.query(query, values, function (er, da) {
                 console.log(query.sql);
-                if(er)throw er;
+                if(er) console.log(er);
             });
             
 
@@ -435,6 +435,43 @@ async function getProjects(userInterests) {
             mkdirp('images', function(err) { console.log(err); });
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
+                let obj = { date: formatDateTime(date),
+                            name: advisorName,
+                            title: researchName,
+                            profile: `view-account?email=${advisorEmail}`,
+                            description: description,
+                            tags: interests,
+                            filename: outputFile };
+                projects.push(obj);
+            }
+        }
+
+        return projects;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function getUserProjects(email) {
+    let projects = [];
+    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
+    console.log(email);
+    try {
+        let results = await query(researchQuery);
+
+        for(let r of results) {
+            let date = r.dateOfCreation;
+            let advisorEmail = r.advisor_email;
+            let researchName = r.research_name;
+            let description = r.description;
+            let interests = JSON.parse(r.interests);
+            let advisorName = r.name;
+            let image = r.research_image; 
+            let imgExt = r.research_imageExtension;
+            let outputFile = `images/${researchName}.${imgExt}`;
+            mkdirp('images', function(err) { console.log(err); });
+            fs.writeFileSync(outputFile, image);
+            if (r.advisor_email === email) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
