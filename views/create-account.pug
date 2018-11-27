@@ -9,12 +9,12 @@ block content
     div.card.container: div.card-body
         h3 Create an Account
         hr
-        form(method='post' action='' enctype='multipart/form-data' onsubmit="validate()")
+        form(method='post' action='' enctype='multipart/form-data' onsubmit="return validate()")
 
             div.form-row
                 div.col-sm-4#image-container
                     div.dropZoneContainer
-                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif')
+                        input.form-control.FileUpload(name='pic' type='file' onchange='handleFileSelect(this)' accept='.jpg,.png,.gif' required = "yes")
                         div.dropZoneOverlay.empty
                             p Drag and drop your profile picture
                             p <b>or click here.</b>
@@ -36,7 +36,7 @@ block content
                     label(for='number') Phone Number:
                     input.form-control(type='text' id='number' name='number' required = "yes")
                     label(for='tags') Interests:
-                    select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]')
+                    select.form-control(multiple id='tags' data-role='tagsinput' name='tags[]' required = "yes")
 
 
 

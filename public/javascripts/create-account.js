@@ -32,5 +32,8 @@ function validate() {
 
     if(msg !== "") {
         alert(msg);
+        return false;
     }
+
+    return true;
 }
