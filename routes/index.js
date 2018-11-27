@@ -25,7 +25,7 @@ function verify(password, hashed) {
 }
 
 function error_redirect(res){
-    res.render('error', { authorized: req.session.username, message: "Database has Failed"});
+    res.render('error', { authorized: false, message: "Database has Failed"});
 }
 
 function checkSignIn(req, res, next) {
@@ -82,32 +82,27 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
 
 router.get('/edit/:id', checkSignIn, function (req, res, next) {
 
-    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+req.params['id']+"'";
+    console.log(req.params['id']);
+    let query = "SELECT * FROM ResearchIdea WHERE research_name='"+req.params['id']+"'";
     db.query(query, (err, result, fields) => {
         if (err) {
             error_redirect(res);
         }
         else {
-            let count = 0;
-            //console.log(result);
             for(let r of result) {
-                console.log("STARTING TEST");
                 let date = r.dateOfCreation;
-                let advisor_username = r.advisor_username;
-                let title_name = r.research_name;
+                let advisorUsername = r.advisor_username;
+                let researchName = r.research_name;
                 let description = r.description;
                 let tags = JSON.parse(r.interests);
+                let advisorName = r.name;
+                let image = r.research_image; 
+                let imgExt = r.research_imageExtension;
+                let outputFile = `images/${researchName}.${imgExt}`;
+                fs.writeFileSync(outputFile, image);
+                outputFile = "../" + outputFile;
 
-                let image = r.image;
-                let imgExt = r.imageExtension;
-                let outputfile = "testImg" + count + "."+ imgExt;
-                console.log("WRITING IMAGE");
-                const buf = new Buffer(image, "binary");
-                fs.writeFileSync(outputfile, buf);
-
-                count = count + 1;
-
-                res.render('edit-entry', {authorized: req.session.username, title: 'Edit Post', val_description: description, val_title: title_name, val_tags : tags, file : outputfile})
+                res.render('edit-entry', {authorized: req.session.username, title: 'Edit Post', val_description: description, val_title: researchName, val_tags : tags, file : outputFile})
             }
         }
     });
@@ -118,6 +113,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
+    console.log(req);
     let tags = req.body.tags;
     let username = req.session.username;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
@@ -135,7 +131,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
 
             let imageData = data;
 
-            var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
+            var query = "UPDATE ResearchIdea WHERE research_name = '"+req.params['id']+"' SET ?";
             let values = {
                 dateOfCreation: date,
                 advisor_username: username,
@@ -150,7 +146,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
             });
         });
     } else {
-        var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
+        var query = "UPDATE ResearchIdea WHERE research_name = '"+req.params['id']+"' SET ?";
         let values = {
             dateOfCreation: date,
             advisor_username: username,
@@ -173,7 +169,7 @@ router.get('/login', function(req, res, next) {
 
 /* POST login page. */
 router.post('/login', function (req, res, next) {
-    let e = req.body.username;
+    let e = req.body.username.toLowerCase();
     let p = req.body.userPassword;
 
     let query = "SELECT password FROM Accounts WHERE username = '" + e + "'";
@@ -221,7 +217,7 @@ router.get('/create-login', function (req, res, next) {
 router.post('/create-login', upload.single('pic'), function (req, res, next) {
 
     let image = req.file;
-    let username = req.body.username;
+    let username = req.body.username.toLowerCase();
     let email = req.body.email;
     let name = req.body.name;
     let unhashed = req.body.password;
@@ -264,6 +260,7 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 //edit account
 router.get('/view-account', checkSignIn, async function(req, res, next){
     let username=req.query.username || req.session.username;
+    username = username.toLowerCase();
     let name, email, phonenumber, image, interests=null;
     let data = await getAll(username);
     let projects = await getUserProjects(username);
@@ -278,8 +275,7 @@ router.get('/view-account', checkSignIn, async function(req, res, next){
     let imgExt=data[0].imageExtension;
     let path=`images/${username}.${imgExt}`;
     fs.writeFileSync(path, image);
-
-    res.render('view-account', {authorized: req.session.username, title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
+    res.render('view-account', {authorized: req.session.username, title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path, own:username === req.session.username});
 });
 
 
@@ -306,26 +302,41 @@ router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, r
         let tags = req.body.tags;
         let username = req.session.username;
         let tagStr = JSON.stringify(tags);
-        let splitImage = image.originalname.split(".");
-        let imageExt = splitImage[splitImage.length - 1];
-        fs.readFile("uploads/"+image.filename, function(err, data) {
-            if (err) { error_redirect(res); }
+
+        if(image){
+            let splitImage = image.originalname.split(".");
+            let imageExt = splitImage[splitImage.length - 1];
+            fs.readFile("uploads/"+image.filename, function(err, data) {
+                if (err) { error_redirect(res); }
     
-            let imageData = data;
+                let imageData = data;
     
-            var query = 'UPDATE Accounts SET name=?, phonenumber= ?, image= ?, imageExtension= ?, user_interests= ?  WHERE username= ?';
-            let values = [name, number, imageData, imageExt, tagStr, username];
-    
+                var query = 'UPDATE Accounts SET name=?, phonenumber= ?, image= ?, imageExtension= ?, user_interests= ?  WHERE username= ?';
+                let values = [name, number, imageData, imageExt, tagStr, username];
+        
+                db.query(query, values, function (er, da) {
+                    console.log(query.sql);
+                    if(er) error_redirect(res);
+                });
+                
+
+
+                res.redirect('/feed');
+            });
+        } else {
+            var query = "UPDATE Accounts SET ? WHERE username='"+username+"'";
+            let values = {
+                name: name,
+                phonenumber: number,
+                user_interests: tagStr
+            };
             db.query(query, values, function (er, da) {
-                console.log(query.sql);
                 if(er) error_redirect(res);
             });
+
             
-
-
             res.redirect('/feed');
-        
-        });
+        }
     });
     
 
