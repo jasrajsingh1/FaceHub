@@ -1,40 +1,25 @@
 extends layout
 
 block additional-styling
-    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput-typeahead.css')
-    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css')
-    link(rel='stylesheet' href='/stylesheets/create-account.css')
-    link(rel='stylesheet' href='/stylesheets/view-account.css')
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  link(rel='stylesheet' href='/stylesheets/view-account.css')
 
 block content
-    div.card.container: div.card-body
-        h3 #{username}'s Profile
-        
-        form(method='post' action='' enctype='multipart/form-data')
-            div.form-row
-                div.col-sm-4#image-container
-                    img.pic(src=path)
-
-                div.col-sm-8#text-container 
-                    div.form-group
-                        label(for='email') Email: #{email} 
-                        br
-                        label(for='number') Phone Number: #{phonenumber}
-                            
-                        br
-                        label(for='tags') Interests:
-                            each tag in interests
-                                span.tags=tag
-                        br
-                        br
-                        br
-                        br
-                        br
-                        br
-                        br
-                        br
-                        br
-                        
+  div.container
+    div.card.profile
+      div.card-body
+        div.card-title
+          h3 #{username}'s Profile
+        div.row
+          div.left
+            img.img(src=path)
+          div.right
+            div Email: #{email}
+            div Phone Number: #{phonenumber}
+          div.card-footer
+            div.interests
+              each tag in interests
+                span.tags=tag
     div.projects
       each project in projects
         div.card.project
@@ -50,15 +35,8 @@ block content
             div.footer-left
               each tag in project.tags
                 span.tags=tag
-            div.footer-right.date=project.date
-                        
-                    
-                
-
-        
-
-
-
+            div.footer-right.date=project.date        
+            button.edit(type="submit" formaction=`/edit_entry?id=${project.title}` visibility='hidden')
+              i.fa.fa-edit
+                            
 block additional-libraries
-    script(src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.js')
-    script(src='/javascripts/add-entry.js')

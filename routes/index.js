@@ -9,15 +9,27 @@ var router = express.Router();
 var multer  = require('multer');
 var upload = multer({ dest: 'uploads/' });
 const fs = require("fs");
-var mkdirp = require('mkdirp');
+const crypto = require('crypto');
 
+function hash(password) {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 2048, 32, 'sha512').toString('hex');
+    return [salt, hash].join('$');
+}
 
-function error_redirect(){
+function verify(password, hashed) {
+    const originalHash = hashed.split('$')[1];
+    const salt = hashed.split('$')[0];
+    const hash = crypto.pbkdf2Sync(password, salt, 2048, 32, 'sha512').toString('hex');
+    return hash === originalHash;
+}
+
+function error_redirect(res){
     res.render('error', {message: "Database has Failed"});
 }
 
 function checkSignIn(req, res, next) {
-    if (req.session.userEmail) {
+    if (req.session.username) {
         next();
     } else {
         res.render('error', {message: "Sign in first"});
@@ -40,19 +52,20 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
     let title = req.body.title;
     let description = req.body.description;
     let tags = req.body.tags;
-    let userEmail = req.session.userEmail;
+    let username = req.session.username;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    let imageExt = image.originalname.split(".")[1];
+    let splitImage = image.originalname.split(".");
+    let imageExt = splitImage[splitImage.length - 1];
     fs.readFile("uploads/"+image.filename, function(err, data) {
-        if (err) { error_redirect(); }
+        if (err) { error_redirect(res); }
 
         let imageData = data;
 
         var query = "INSERT INTO ResearchIdea SET ?";
         let values = {
             dateOfCreation: date,
-            advisor_email: userEmail,
+            advisor_username: username,
             research_name: title,
             description: description,
             interests: JSON.stringify(tags),
@@ -60,7 +73,7 @@ router.post('/add-entry', checkSignIn, upload.single('pic'), function (req, res,
             research_imageExtension: imageExt
         };
         db.query(query, values, function (er, da) {
-            if(er) error_redirect();
+            if(er) error_redirect(res);
         });
     });
 
@@ -72,7 +85,7 @@ router.get('/edit/:id', checkSignIn, function (req, res, next) {
     let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+req.params['id']+"'";
     db.query(query, (err, result, fields) => {
         if (err) {
-            error_redirect();
+            error_redirect(res);
         }
         else {
             let count = 0;
@@ -80,7 +93,7 @@ router.get('/edit/:id', checkSignIn, function (req, res, next) {
             for(let r of result) {
                 console.log("STARTING TEST");
                 let date = r.dateOfCreation;
-                let advisor_email = r.advisor_email;
+                let advisor_username = r.advisor_username;
                 let title_name = r.research_name;
                 let description = r.description;
                 let tags = JSON.parse(r.interests);
@@ -101,25 +114,31 @@ router.get('/edit/:id', checkSignIn, function (req, res, next) {
     res.status(404);
 });
 
-router.post('/edit/:id', checkSignIn, function (req, res, next) {
+router.post('/edit/:id', checkSignIn, async function (req, res, next) {
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
     let tags = req.body.tags;
-    let userEmail = req.session.userEmail;
+    let username = req.session.username;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    let researchUsername = await getProjectUsername(req.params['id']);
+
+    if (username !== researchUsername) {
+        res.render('error', {message: "Cannot edit another user's post"});
+    }
 
     if(image){
-        let imageExt = image.originalname.split(".")[1];
+        let splitImage = image.originalname.split(".");
+        let imageExt = splitImage[splitImage.length - 1];
         fs.readFile("uploads/"+image.filename, function(err, data) {
-            if (err) { error_redirect(); }
+            if (err) { error_redirect(res); }
 
             let imageData = data;
 
             var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
             let values = {
                 dateOfCreation: date,
-                advisor_email: userEmail,
+                advisor_username: username,
                 research_name: title,
                 description: description,
                 interests: JSON.stringify(tags),
@@ -127,20 +146,20 @@ router.post('/edit/:id', checkSignIn, function (req, res, next) {
                 research_imageExtension: imageExt
             };
             db.query(query, values, function (er, da) {
-                if(er) error_redirect();
+                if(er) error_redirect(res);
             });
         });
     } else {
         var query = "UPDATE ResearchIdea WHERE research_name = "+req.params['id']+" SET ?";
         let values = {
             dateOfCreation: date,
-            advisor_email: userEmail,
+            advisor_username: username,
             research_name: title,
             description: description,
             interests: JSON.stringify(tags),
         };
         db.query(query, values, function (er, da) {
-            if(er) error_redirect();
+            if(er) error_redirect(res);
         });
     }
 
@@ -154,42 +173,31 @@ router.get('/login', function(req, res, next) {
 
 /* POST login page. */
 router.post('/login', function (req, res, next) {
-    
-    console.log(req.body);
-
-    let e = req.body.userEmail;
+    let e = req.body.username;
     let p = req.body.userPassword;
-    
-    console.log("EMAIL IS: "+e);
-    //res.render('login-success', { title: 'Login Success' });
 
-    //TODO Add to DB here
-    let query = "SELECT password FROM Accounts WHERE email = '" + e + "'";
+    let query = "SELECT password FROM Accounts WHERE username = '" + e + "'";
     db.query(query, (err, result, fields) => {
+        if (err) {
+            console.log("USER LOGIN : "+query);
+        }
 
-        console.log(result[0].password);
-            
-            if (err) {
-                console.log("USER LOGIN : "+query);
-            }
+        else if(result.length === 0) {
+            res.render('login', { title: 'Login' });
+        }
 
-            else if(result.length === 0) {
-                res.render('login', { title: 'Login' });
+        else {
+
+            if(verify(p, result[0].password)) {
+                req.session.username = e;
+                res.redirect('/feed');
             }
 
             else {
-
-                if(result[0].password === p) {
-                    //res.render('login-success', { title: 'Login Success' });
-                    req.session.userEmail = e;
-                    res.redirect('/feed');
-                }
-
-                else {
-                    res.render('login', { title: 'Login' });
-                } 
-            }  
-        });
+                res.render('login', { title: 'Login' });
+            } 
+        }  
+    });
 });
 
 router.get('/logout', function(req, res, next) {
@@ -213,20 +221,24 @@ router.get('/create-login', function (req, res, next) {
 router.post('/create-login', upload.single('pic'), function (req, res, next) {
 
     let image = req.file;
+    let username = req.body.username;
     let email = req.body.email;
     let name = req.body.name;
-    let password = req.body.password;
+    let unhashed = req.body.password;
+    let password = hash(unhashed);
     let number = req.body.number;
     let tags = req.body.tags;
     let tagStr = JSON.stringify(tags);
-    let imageExt = image.originalname.split(".")[1];
+    let splitImage = image.originalname.split(".");
+    let imageExt = splitImage[splitImage.length - 1];
     fs.readFile("uploads/"+image.filename, function(err, data) {
-        if (err) { error_redirect(); }
+        if (err) { error_redirect(res); }
 
         let imageData = data;
 
         var query = "INSERT INTO Accounts SET ?";
         let values = {
+            username: username,
             email: email,
             name: name,
             password: password,
@@ -236,53 +248,12 @@ router.post('/create-login', upload.single('pic'), function (req, res, next) {
             user_interests: tagStr
         };
         db.query(query, values, function (er, da) {
-            if(er) error_redirect();
+            if(er) error_redirect(res);
         });
 
-        req.session.userEmail = email;
+        req.session.username = username;
         res.redirect('/feed');
     });
-    /*
-    fs.open("uploads/"+image.filename, 'r', function (status, fd) {
-        if (status) {
-            console.log(status.message);
-            return;
-        }
-        var fileSize = getFilesizeInBytes("uploads/"+image.filename);
-        var buffer = new Buffer(fileSize);
-        fs.read(fd, buffer, 0, fileSize, 0, function (err, num) {
-    
-            var query = "INSERT INTO Accounts SET ?",
-                values = {
-                    email: email,
-                    name: name,
-                    password: password,
-                    phonenumber: number,
-                    image: buffer,
-                    imageExtension: imageExt,
-                    user_interests: tagStr
-                };
-            db.query(query, values, function (er, da) {
-                if(er) console.log(er);
-            });
-    
-        });
-    });*/
-
-
-
-    // let query = "INSERT INTO Accounts (email, name, password, phonenumber, image, imageExtension, user_interests) VALUES ('" +
-    //                         email + "', '" + name + "', '" + password + "', '" + number + "', BINARY(:'" + imageData + ")', '" + imageExt + "', '" + tagStr + "')";
-    // console.log("Query is: "+query);
-    // db.query(query, (err, result) => {
-    //     if (err) {
-    //         console.log("Query is: "+query);
-    //         console.log(err);
-    //         //return res.status(500).send(err);
-    //     }
-    //     res.redirect('/');
-    // });
-    
 });
 
 /*
@@ -292,21 +263,20 @@ FIGURE OUT HOW TO DISPLAY PICTURE UNDER /test
 */
 //edit account
 router.get('/view-account', checkSignIn, async function(req, res, next){
-    let email=req.query.email || req.session.userEmail;
-    let name, phonenumber, image, interests=null;
-    let data = await getAll(email);
-    let projects = await getUserProjects(email);
+    let username=req.query.username || req.session.username;
+    let name, email, phonenumber, image, interests=null;
+    let data = await getAll(username);
+    let projects = await getUserProjects(username);
     
     name=data[0].name;
+    email=data[0].email;
     phonenumber=data[0].phonenumber;
     image=data[0].image;
     interests=JSON.parse(data[0].user_interests);
     comments=data[0].comments;
 
     let imgExt=data[0].imageExtension;
-    let path=`images/${email}.${imgExt}`;
-    console.log('***path is:' + path);
-    mkdirp('images', function(err) { error_redirect(); });
+    let path=`images/${username}.${imgExt}`;
     fs.writeFileSync(path, image);
 
     res.render('view-account', {title: name, email:email, username:name, phonenumber:phonenumber, interests:interests, projects:projects, path:path});
@@ -314,19 +284,19 @@ router.get('/view-account', checkSignIn, async function(req, res, next){
 
 
 router.get('/edit-account', checkSignIn, async function (req, res, next) {
-    let userEmail = req.session.userEmail;
+    let username = req.session.username;
     let name, phonenumber, image, interests=null;
-    let data = await getAll(userEmail);
+    let data = await getAll(username);
+    email=data[0].email;
     name=data[0].name;
     phonenumber=data[0].phonenumber;
     image=data[0].image;
     interests=JSON.parse(data[0].user_interests);
     let imgExt=data[0].imageExtension;
-    let path=`images/${userEmail}.${imgExt}`;
-    mkdirp('images', function(err) { error_redirect(); });
+    let path=`images/${username}.${imgExt}`;
     fs.writeFileSync(path, image);
 
-    res.render('edit-account', { title: 'Edit Account', email:userEmail, username:name, phonenumber:phonenumber, interests:interests, path:path});
+    res.render('edit-account', { title: 'Edit Account', email:email, name:name, phonenumber:phonenumber, interests:interests, path:path});
 });
 
 router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, res, next) {
@@ -334,20 +304,21 @@ router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, r
         let name = req.body.name;
         let number = req.body.number;
         let tags = req.body.tags;
-        let userEmail = req.session.userEmail;
+        let username = req.session.username;
         let tagStr = JSON.stringify(tags);
-        let imageExt = image.originalname.split(".")[1];
+        let splitImage = image.originalname.split(".");
+        let imageExt = splitImage[splitImage.length - 1];
         fs.readFile("uploads/"+image.filename, function(err, data) {
-            if (err) { error_redirect(); }
+            if (err) { error_redirect(res); }
     
             let imageData = data;
     
-            var query = 'UPDATE Accounts SET name=?, phonenumber= ?, image= ?, imageExtension= ?, user_interests= ?  WHERE email= ?';
-            let values = [name, number, imageData, imageExt, tagStr, userEmail];
+            var query = 'UPDATE Accounts SET name=?, phonenumber= ?, image= ?, imageExtension= ?, user_interests= ?  WHERE username= ?';
+            let values = [name, number, imageData, imageExt, tagStr, username];
     
             db.query(query, values, function (er, da) {
                 console.log(query.sql);
-                if(er) error_redirect();
+                if(er) error_redirect(res);
             });
             
 
@@ -358,14 +329,14 @@ router.post('/edit-account', checkSignIn, upload.single('pic'), function (req, r
     });
     
 
-async function getAll(email) {
-    let userQuery = `SELECT * FROM Accounts where email=?`;
+async function getAll(username) {
+    let userQuery = `SELECT * FROM Accounts where username=?`;
 
     try {
-        let results = await query2(userQuery, email);
+        let results = await query2(userQuery, username);
         return results;
     } catch (err) {
-        error_redirect();
+        error_redirect(res);
     }
 }
 
@@ -392,14 +363,14 @@ function query(sql) {
     });
 }
 
-async function getInterests(userEmail) {
-    let userQuery = `SELECT user_interests FROM Accounts WHERE email='${userEmail}'`;
+async function getInterests(username) {
+    let userQuery = `SELECT user_interests FROM Accounts WHERE username='${username}'`;
 
     try {
         let results = await query(userQuery);        
         return JSON.parse(results[0].user_interests).sort();
     } catch (err) {
-        error_redirect();
+        error_redirect(res);
     }
 }
 
@@ -422,14 +393,13 @@ function formatDateTime(dt) {
 
 async function getProjects(userInterests) {
     let projects = [];
-    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
-    console.log(userInterests);
+    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_username = A.username ORDER BY dateOfCreation DESC';
     try {
         let results = await query(researchQuery);
 
         for(let r of results) {
             let date = r.dateOfCreation;
-            let advisorEmail = r.advisor_email;
+            let advisorUsername = r.advisor_username;
             let researchName = r.research_name;
             let description = r.description;
             let interests = JSON.parse(r.interests);
@@ -437,13 +407,12 @@ async function getProjects(userInterests) {
             let image = r.research_image; 
             let imgExt = r.research_imageExtension;
             let outputFile = `images/${researchName}.${imgExt}`;
-            mkdirp('images', function(err) { error_redirect(); });
             fs.writeFileSync(outputFile, image);
             if (interests.some(interest => userInterests.indexOf(interest) !== -1)) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
-                            profile: `view-account?email=${advisorEmail}`,
+                            profile: `view-account?username=${advisorUsername}`,
                             description: description,
                             tags: interests,
                             filename: outputFile };
@@ -453,20 +422,19 @@ async function getProjects(userInterests) {
 
         return projects;
     } catch (err) {
-        error_redirect();
+        console.log(err);
     }
 }
 
-async function getUserProjects(email) {
+async function getUserProjects(username) {
     let projects = [];
-    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation DESC';
-    console.log(email);
+    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_username = A.username ORDER BY dateOfCreation DESC';
     try {
         let results = await query(researchQuery);
 
         for(let r of results) {
             let date = r.dateOfCreation;
-            let advisorEmail = r.advisor_email;
+            let advisorUsername = r.advisor_username;
             let researchName = r.research_name;
             let description = r.description;
             let interests = JSON.parse(r.interests);
@@ -474,9 +442,8 @@ async function getUserProjects(email) {
             let image = r.research_image; 
             let imgExt = r.research_imageExtension;
             let outputFile = `images/${researchName}.${imgExt}`;
-            mkdirp('images', function(err) { error_redirect(); });
             fs.writeFileSync(outputFile, image);
-            if (r.advisor_email === email) {
+            if (advisorUsername === username) {
                 let obj = { date: formatDateTime(date),
                             name: advisorName,
                             title: researchName,
@@ -490,114 +457,45 @@ async function getUserProjects(email) {
 
         return projects;
     } catch (err) {
-        error_redirect();
+        console.log(err);
     }
+}
+
+async function getProjectUsername(projectName) {
+    let projects = [];
+    let researchQuery = 'SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_username = A.username ORDER BY dateOfCreation DESC';
+    try {
+        let results = await query(researchQuery);
+
+        for(let r of results) {
+            let advisorUsername = r.advisor_username;
+
+            return advisorUsername;
+        }
+
+        return projects;
+    } catch (err) {
+        console.log(err);
+    }
+
+    return null;
 }
 
 /* GET feed page*/
 router.get('/feed', checkSignIn, async function(req, res, next) {
-    let userEmail = req.session.userEmail;
-    let interests = await getInterests(userEmail);
+    let username = req.session.username;
+    let interests = await getInterests(username);
     let projects = await getProjects(interests);
     res.render('feed', { interests: interests, projects: projects });
 });
 
 /* POST feed page */
 router.post('/feed', checkSignIn, async function(req, res, next) {
-    let userEmail = req.session.userEmail;
-    let interests = await getInterests(userEmail);
+    let username = req.session.username;
+    let interests = await getInterests(username);
     let selected = req.body.interest === "All" ? interests: [req.body.interest];
     let projects = await getProjects(selected);
     res.render('feed', { selected: req.body.interest, interests: interests, projects: projects});
 });
 
-/*router.get('/test', function (req, res, next) {
-
-    // let query = "SELECT R.*, A.* FROM ResearchIdea as R INNER JOIN Accounts as A on R.advisor_email = A.email ORDER BY dateOfCreation";
-    // db.query(query, (err, result, fields) => {
-
-    //     if (err) {
-    //         console.log("ERROR");
-    //     }
-
-    //     else {
-    //         let count = 0;
-
-    //         //console.log(result);
-    //         for(let r of result) {
-    //             console.log("STARTING TEST");
-    //             let date = r.dateOfCreation;
-    //             let advisor_email = r.advisor_email;
-    //             let research_name = r.research_name;
-    //             let description = r.description;
-    //             let interests = r.interests;
-    //             let advisorName = r.name;
-    //             let phoneNumber = r.phonenumber;
-    //             let image = r.image; 
-    //             let imgExt = r.imageExtension;
-    //             let outputfile = "outputImg" + count + "."+ imgExt;
-    //             console.log("WRITING IMAGE");
-    //             const buf = new Buffer(image, "binary");
-    //             fs.writeFileSync(outputfile, buf);
-
-    //             count = count + 1;
-
-    //             //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
-
-    //             console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
-    //         }
-    //     }  
-    // });
-
-    let researchName = "test2";
-    let query = "SELECT * FROM ResearchIdea WHERE research_name = '"+researchName+"'";
-    db.query(query, (err, result, fields) => {
-
-        if (err) {
-            console.log("ERROR");
-        }
-
-        else {
-            let count = 0;
-
-            //console.log(result);
-            for(let r of result) {
-                console.log("STARTING TEST");
-                let date = r.dateOfCreation;
-                let advisor_email = r.advisor_email;
-                let research_name = r.research_name;
-                let description = r.description;
-                let interests = r.interests;
-                
-                let image = r.image; 
-                let imgExt = r.imageExtension;
-                let outputfile = "testImg" + count + "."+ imgExt;
-                console.log("WRITING IMAGE");
-                const buf = new Buffer(image, "binary");
-                fs.writeFileSync(outputfile, buf);
-
-                count = count + 1;
-
-                //LUKE -- I think output file contains the image to be displayed....u can prob use that info..
-
-                console.log("{"+date+","+advisor_email+","+research_name+","+description+","+interests+"}");
-            }
-        }  
-    });
-
-});*/
-
 module.exports = router;
-
-function readImageFile(file) {
-    // read binary data from a file:
-    const bitmap = fs.readFileSync(file);
-    const buf = new Buffer(bitmap);
-    return buf;
-}
-
-function getFilesizeInBytes(filename) {
-    const stats = fs.statSync(filename)
-    const fileSizeInBytes = stats.size
-    return fileSizeInBytes
-}
