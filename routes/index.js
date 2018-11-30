@@ -109,15 +109,15 @@ router.get('/edit/:id', checkSignIn, function (req, res, next) {
     res.status(404);
 });
 
-router.post('/edit/:id', checkSignIn, async function (req, res, next) {
+router.post('/edit/:id', checkSignIn, upload.single('pic'), async function (req, res, next) {
     let image = req.file;
     let title = req.body.title;
     let description = req.body.description;
-    console.log(req);
     let tags = req.body.tags;
     let username = req.session.username;
     let date = new Date().toISOString().slice(0, 19).replace('T', ' ');
     let researchUsername = await getProjectUsername(req.params['id']);
+    console.log(req.params['id'])
 
     if (username !== researchUsername) {
         res.render('error', {authorized: req.session.username, message: "Cannot edit another user's post"});
@@ -131,7 +131,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
 
             let imageData = data;
 
-            var query = "UPDATE ResearchIdea WHERE research_name = '"+req.params['id']+"' SET ?";
+            var query = "UPDATE ResearchIdea SET ? WHERE research_name = '"+req.params['id']+"'";
             let values = {
                 dateOfCreation: date,
                 advisor_username: username,
@@ -146,7 +146,7 @@ router.post('/edit/:id', checkSignIn, async function (req, res, next) {
             });
         });
     } else {
-        var query = "UPDATE ResearchIdea WHERE research_name = '"+req.params['id']+"' SET ?";
+        var query = "UPDATE ResearchIdea SET ? WHERE research_name = '"+req.params['id']+"'";
         let values = {
             dateOfCreation: date,
             advisor_username: username,
